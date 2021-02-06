@@ -8,6 +8,8 @@ get_eurostat_indicator(id, eurostat_toc = NULL)
 }
 \arguments{
 \item{id}{The identifier code of a Eurostat data product.}
+
+\item{eurostat_toc}{The Eurostat table of contents}
 }
 \value{
 A list that contains three tables: the indicator, a value label

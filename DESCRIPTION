@@ -5,7 +5,7 @@ Authors@R:
     person(given = "Daniel",
            family = "Antal",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
+           email = "daniel.antal@reprex.nl",
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
@@ -22,7 +22,11 @@ Imports:
     rlang,
     assertthat,
     glue,
-    purrr
+    purrr,
+    DBI,
+    RSQLite,
+    tidyr,
+    snakecase
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
