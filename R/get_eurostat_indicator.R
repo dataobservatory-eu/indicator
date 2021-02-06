@@ -13,7 +13,7 @@
 #' @importFrom tidyselect any_of all_of everything contains
 #' @importFrom glue glue
 #' @importFrom assertthat assert_that
-#' @importFrom tidyr unite pivot_wider
+#' @importFrom tidyr unite pivot_wider pivot_longer
 #' @importFrom snakecase to_sentence_case
 #' @return A list that contains three tables: the indicator, a value label
 #' description table and a metadata table.
@@ -125,27 +125,27 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   a <- labelling_table %>%
     select ( -contains("_description"))  %>%
-    tidyr::pivot_longer ( cols = -all_of(c("db_source_code", "indicator_code",
-                                           "description_raw")),
-                          names_to  = "variable",
-                          values_to = "code")
+    pivot_longer ( cols = -all_of(c("db_source_code", "indicator_code",
+                                    "description_raw")),
+                   names_to  = "variable",
+                   values_to = "code")
 
   b <- value_labels %>%
     set_names ( paste0(names(.), "_description")) %>%
     bind_cols ( val_labels ) %>%
     distinct_all() %>%
-    tidyr::pivot_longer ( cols = contains( "_description"),
-                          names_to  = "variable",
-                          values_to = "description") %>%
+    pivot_longer ( cols = contains( "_description"),
+                   names_to  = "variable",
+                   values_to = "description") %>%
     mutate ( variable = gsub("_description", "", .data$variable) ) %>%
-    tidyr::pivot_longer ( cols = -all_of(c("description", "variable")),
-                          names_to = "indic",
-                          values_to = "code") %>%
-    filter ( variable == .data$indic ) %>%
+    pivot_longer ( cols = -all_of(c("description", "variable")),
+                   names_to = "indic",
+                   values_to = "code") %>%
+    filter ( .data$variable == .data$indic ) %>%
     select ( -all_of(c("indic"))) %>%
     distinct_all()
 
-  labelling <- a %>% left_join ( b )
+  labelling <- a %>% left_join ( b, by = c("variable", "code") )
 
   ## Further metadata and assertions  -------------------------------------------
   indicator_frequency <- unique(indicator$frequency)
@@ -212,7 +212,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
     bind_cols ( metadata %>%
                   select ( -all_of(c("missing", "actual")))
                ) %>%
-    left_join ( value_labels %>%
+    left_join ( labelling %>%
                   select ( all_of (c("indicator_code", "description_raw"))),
                   by = 'indicator_code' ) %>%
     select ( all_of(c("indicator_code", "title_at_source", "description_raw",
