@@ -9,7 +9,7 @@ create_metadata_table <- function( con ) {
   "CREATE TABLE metadata  (
     indicator_code TEXT,
    title_at_source TEXT,
-   description_raw TEXT,
+   description_indicator TEXT,
    frequency TEXT,
    code TEXT,
    type TEXT,
@@ -33,12 +33,18 @@ create_metadata_table <- function( con ) {
 
 }
 
-create_metadata_table <- function( con ) {
+create_labelling_table <- function( con ) {
 
   dbSendQuery(conn = con,
               statement =
-                "CREATE TABLE metadata  (
-                 indicator_code TEXT, )
+                "CREATE TABLE labelling  (
+                 db_source_code TEXT,
+                 indicator_code TEXT,
+                 description_indicator TEXT,
+                 variable TEXT,
+                 code TEXT,
+                 description_variable TEXT,
+                 PRIMARY KEY (db_source_code) )
               ")
 
     }
@@ -46,6 +52,7 @@ create_metadata_table <- function( con ) {
 initialize_database <- function () {
   con <- dbConnect(RSQLite::SQLite(), ":memory:")
   create_metadata_table(con)
+  create_labelling_table(con)
   con
 }
 

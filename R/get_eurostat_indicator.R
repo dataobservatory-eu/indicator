@@ -108,37 +108,38 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
     relocate ( any_of(c("db_source_code", "indicator_code")),
                .before = everything()
                ) %>%
-    unite ( col = description_raw,
+    unite ( col = description_indicator,
             contains("_description"),
             sep = " ",
             remove = FALSE ) %>%
-    mutate ( description_raw = snakecase::to_sentence_case(.data$description_raw) )
+    mutate ( description_indicator = snakecase::to_sentence_case(.data$description_indicator) )
 
   ## Creating a complete coding / labelling table -----------------------------
 
-  a <- labelling_table %>%
+  indicator_description <- labelling_table %>%
     select ( -contains("_description"))  %>%
     pivot_longer ( cols = -all_of(c("db_source_code", "indicator_code",
-                                    "description_raw")),
+                                    "description_indicator")),
                    names_to  = "variable",
                    values_to = "code")
 
-  b <- value_labels %>%
+  variable_description <- value_labels %>%
     set_names ( paste0(names(.), "_description")) %>%
     bind_cols ( val_labels ) %>%
     distinct_all() %>%
     pivot_longer ( cols = contains( "_description"),
                    names_to  = "variable",
-                   values_to = "description") %>%
+                   values_to = "description_variable") %>%
     mutate ( variable = gsub("_description", "", .data$variable) ) %>%
-    pivot_longer ( cols = -all_of(c("description", "variable")),
+    pivot_longer ( cols = -all_of(c("description_variable", "variable")),
                    names_to = "indic",
                    values_to = "code") %>%
     filter ( .data$variable == .data$indic ) %>%
     select ( -all_of(c("indic"))) %>%
     distinct_all()
 
-  labelling <- a %>% left_join ( b, by = c("variable", "code") )
+  labelling <- indicator_description %>%
+    left_join ( variable_description, by = c("variable", "code") )
 
   ## Further metadata and assertions  -------------------------------------------
   indicator_frequency <- unique(indicator$frequency)
@@ -206,9 +207,9 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                   select ( -all_of(c("missing", "actual")))
                ) %>%
     left_join ( labelling %>%
-                  select ( all_of (c("indicator_code", "description_raw"))),
+                  select ( all_of (c("indicator_code", "description_indicator"))),
                   by = 'indicator_code' ) %>%
-    select ( all_of(c("indicator_code", "title_at_source", "description_raw",
+    select ( all_of(c("indicator_code", "title_at_source", "description_indicator",
                       "db_source_code",
                       "frequency","data_start", "data_end",
                       "last_update_data", "last_update_data_source",
