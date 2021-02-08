@@ -1,3 +1,5 @@
+#' Initialize the metadata table
+#' @param con A connection
 #' @importFrom DBI dbSendQuery dbConnect
 #' @importFrom RSQLite SQLite
 #' @keywords internal
@@ -33,6 +35,10 @@ create_metadata_table <- function( con ) {
 
 }
 
+#' Initialize the labelling table
+#' @param con A connection
+#' @keywords internal
+
 create_labelling_table <- function( con ) {
 
   dbSendQuery(conn = con,
@@ -49,6 +55,8 @@ create_labelling_table <- function( con ) {
 
 }
 
+#' Create the indicator table in the database
+#' @keywords internal
 create_indicator_table <- function( con ) {
 
    dbSendQuery(conn = con,
@@ -56,8 +64,9 @@ create_indicator_table <- function( con ) {
                   "CREATE TABLE indicator  (
                   geo TEXT,
                   time INT,
-                  values REAL,
+                  value REAL,
                   UNIT TEXT,
+                  indicator_source_code TEXT,
                   db_source_code TEXT,
                   year INT
                   month INT
@@ -69,14 +78,25 @@ create_indicator_table <- function( con ) {
 
 }
 
-initialize_database <- function () {
-  con <- dbConnect(RSQLite::SQLite(), ":memory:")
+#' Initialize a database
+#' @param path A path
+#' @importFrom RSQLite SQLite
+#' @importFrom DBI dbListTables
+#' @importFrom glue glue
+#' @importFrom assertthat assert_that
+#' @export
+
+initialize_database <- function ( path = ":memory:") {
+
+  con <- dbConnect(RSQLite::SQLite(), path )
+
   create_metadata_table(con)
   create_labelling_table(con)
+  create_indicator_table(con)
 
   exists("con")
 
-  table_name_difference <- setdiff( c("labelling", "metadata"),
+  table_name_difference <- setdiff( c("indicator", "labelling", "metadata"),
                                     DBI::dbListTables(con) )
   assertthat::assert_that(
      length(table_name_difference)==0,
@@ -87,5 +107,3 @@ initialize_database <- function () {
  con
 
 }
-
-
