@@ -34,7 +34,6 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
     msg = glue::glue ("'{id}' is not a valid Eurostat product code")
     )
 
-
   indic_raw <- eurostat::get_eurostat(id)
 
   ## The metadata columns do not have a strict ordering, except for the case when
@@ -163,8 +162,9 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                             "year", "month", "day",
                             "frequency", 'validate')),
                    remove = TRUE) %>%
-    mutate ( db_source_code = glue::glue ( "eurostat_{id}_{indicator_code}" ) ) %>%
-    mutate ( db_source_code = tolower( as.character(.data$db_source_code)) )
+    mutate ( db_source_code = glue::glue ( "eurostat_{id}" ) ) %>%
+    mutate ( db_source_code = tolower( as.character(.data$db_source_code)) ) %>%
+    mutate ( indicator_code = tolower(paste0(db_source_code, "_", indicator_code)))
 
   ## The metadata is based on the Eurostat metadata information, but
   ## includes frequency and the date of the data download ---------------------
@@ -193,7 +193,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
              forecast = 0, backcast = 0, impute =0 )
 
   metadata_final <- indicator_final %>%
-    select ( all_of(c("indicator_code", "validate"))) %>%
+    select ( all_of(c("indicator_code", "validate")) ) %>%
     group_by_all() %>%
     add_count() %>%
     distinct_all() %>%
@@ -205,10 +205,10 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                                 0)
     ) %>%
     bind_cols ( metadata %>%
-                  select ( -all_of(c("missing", "actual")))
+                  select ( -all_of(c("missing", "actual")) )
     ) %>%
     left_join ( labelling %>%
-                  select ( all_of (c("indicator_code", "description_indicator"))),
+                  select ( all_of (c("indicator_code", "description_indicator")) ),
                 by = 'indicator_code' ) %>%
     select ( all_of(c("indicator_code", "title_at_source", "description_indicator",
                       "db_source_code",
@@ -216,8 +216,8 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                       "last_update_data", "last_update_data_source",
                       "last_structure_change",
                       "actual", "missing", "locf", "nocb", "interpolate",
-                      "forecast", "backcast", "impute"
-    ))
+                      "forecast", "backcast", "impute")
+                    )
     )
 
   list ( indicator = indicator_final,
