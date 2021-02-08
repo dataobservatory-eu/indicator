@@ -4,14 +4,18 @@
 \alias{load_eurostat_metadata}
 \title{Load Eurostat metadata}
 \usage{
-load_eurostat_metadata(envir = globalenv())
+load_eurostat_metadata(envir = globalenv(), path = tempdir())
 }
 \arguments{
 \item{envir}{The environment to load the metadata, defaults to the
 global environment of your current R session.}
+
+\item{path}{The path where you want to store the Eurostat table of contents and
+dictionaries, defaults to \code{tempdir()}.}
 }
 \description{
-The function loads metadata dictionaries and the table of contents
-into the global environment to avoid repeated requests to the Eurostat
-data warehouse.
+The function downloads and saves the Eurostat table of contents and
+code dictionaries to the temporary directory of the session, if it does
+not already exist there; then it loads them to the requested environment
+to avoid repeated requests to the Eurostat data warehouse.
 }

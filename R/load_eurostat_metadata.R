@@ -1,11 +1,14 @@
 #' Load Eurostat metadata
 #'
-#' The function loads metadata dictionaries and the table of contents
-#' into the global environment to avoid repeated requests to the Eurostat
-#' data warehouse.
+#' The function downloads and saves the Eurostat table of contents and
+#' code dictionaries to the temporary directory of the session, if it does
+#' not already exist there; then it loads them to the requested environment
+#' to avoid repeated requests to the Eurostat data warehouse.
 #'
 #' @param envir The environment to load the metadata, defaults to the
 #' global environment of your current R session.
+#' @param path The path where you want to store the Eurostat table of contents and
+#' dictionaries, defaults to \code{tempdir()}.
 #' @importFrom eurostat get_eurostat_dic get_eurostat_toc
 #' @importFrom dplyr filter relocate
 #' @importFrom rlang .data
