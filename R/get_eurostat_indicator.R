@@ -23,17 +23,11 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   . <- missing <- NULL
 
-  var_labels <- ifelse ( exists ( "value_labels"),
-                         value_labels,
-                         NULL )
-
   id <- tolower(id)
 
   ## The id must be available in the Eurostat Table of Contents ----------
 
-  if ( is.null(eurostat_toc) )  {
-    load_eurostat_metadata()
-  }
+  load_eurostat_metadata( envir = environment() )
 
   assertthat::assert_that (
     id %in% eurostat_toc$code,
@@ -46,8 +40,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
   ## The metadata columns do not have a strict ordering, except for the case when
   ## Eurostat has complex tables with several indicators in one data file ----
 
-  indicator_labels <- var_labels %>%
-    filter ( grepl("indicator", .data$full_name ))
+  indicator_labels <- indic_dict
 
   indicator <- indic_raw %>%
     mutate ( year  = as.integer(lubridate::year(.data$time)),
