@@ -47,13 +47,45 @@ create_labelling_table <- function( con ) {
                  PRIMARY KEY (db_source_code) )
               ")
 
-    }
+}
+
+create_indicator_table <- function( con ) {
+
+   dbSendQuery(conn = con,
+               statement =
+                  "CREATE TABLE indicator  (
+                  geo TEXT,
+                  time INT,
+                  values REAL,
+                  UNIT TEXT,
+                  db_source_code TEXT,
+                  year INT
+                  month INT
+                  day INT,
+                  frequency TEXT,
+                  validate TEXT,
+                 PRIMARY KEY (db_source_code) )
+              ")
+
+}
 
 initialize_database <- function () {
   con <- dbConnect(RSQLite::SQLite(), ":memory:")
   create_metadata_table(con)
   create_labelling_table(con)
-  con
+
+  exists("con")
+
+  table_name_difference <- setdiff( c("labelling", "metadata"),
+                                    DBI::dbListTables(con) )
+  assertthat::assert_that(
+     length(table_name_difference)==0,
+     msg = glue::glue(
+        "The table '{table_name_difference}' was not created. This is an error.")
+  )
+
+ con
+
 }
 
 

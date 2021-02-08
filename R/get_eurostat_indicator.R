@@ -163,8 +163,8 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                             "year", "month", "day",
                             "frequency", 'validate')),
                    remove = TRUE) %>%
-    mutate ( indicator_code = glue::glue ( "eurostat_{id}_{indicator_code}" ) ) %>%
-    mutate ( indicator_code = tolower(as.character(.data$indicator_code)) )
+    mutate ( db_source_code = glue::glue ( "eurostat_{id}_{indicator_code}" ) ) %>%
+    mutate ( db_source_code = tolower( as.character(.data$db_source_code)) )
 
   ## The metadata is based on the Eurostat metadata information, but
   ## includes frequency and the date of the data download ---------------------
