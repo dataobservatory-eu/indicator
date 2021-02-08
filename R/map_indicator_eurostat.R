@@ -40,8 +40,6 @@ map_indicator_eurostat <- function ( ids, path ) {
     i <- i+1
   }
 
-  path = "not_included/test2.db"
-
   disc_con <- dbConnect(RSQLite::SQLite(), path )
 
   DBI::dbListTables(con)
