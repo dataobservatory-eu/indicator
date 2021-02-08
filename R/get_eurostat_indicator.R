@@ -21,7 +21,7 @@
 
 get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
-  . <- missing <- NULL
+  . <- missing <- description_indicator <- indic_dict <- NULL
 
   id <- tolower(id)
 
