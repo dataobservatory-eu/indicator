@@ -16,7 +16,7 @@ map_indicator_eurostat <- function ( ids, path ) {
 
   con <- initialize_database()
 
-  first <- get_eurostat_indicator(ids[1])
+  first <- get_eurostat_indicator(id = ids[1])
   DBI::dbWriteTable(con, "metadata",
                     first$metadata,
                     overwrite = TRUE,

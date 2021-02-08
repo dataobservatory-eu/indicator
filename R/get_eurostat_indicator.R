@@ -169,6 +169,8 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
   ## The metadata is based on the Eurostat metadata information, but
   ## includes frequency and the date of the data download ---------------------
 
+  eurostat_toc$`data end`
+
   metadata <- eurostat_toc %>%
     filter ( .data$code == id ) %>%
     distinct_all (
@@ -184,8 +186,8 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
              last_update_data_source = as.Date(.data$last_update_data, format = "%d.%m.%Y"),
              last_structure_change = as.Date(.data$last_update_data, format = "%d.%m.%Y"),
              last_update_data = as.Date(Sys.Date()),
-             data_start = as.integer(.data$data_start),
-             data_end = as.integer(.data$data_end),
+             data_start = as.character(.data$data_start),
+             data_end = as.character(.data$data_end),
              frequency = indicator_frequency,
              actual =  as.numeric(validation_summary["actual"]),
              missing = as.numeric(validation_summary["missing"]),
