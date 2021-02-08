@@ -168,6 +168,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   ## The metadata is based on the Eurostat metadata information, but
   ## includes frequency and the date of the data download ---------------------
+
   metadata <- eurostat_toc %>%
     filter ( .data$code == id ) %>%
     distinct_all (
@@ -202,13 +203,13 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
     mutate ( missing = ifelse ( "missing" %in% names(.),
                                 .data$missing,
                                 0)
-             ) %>%
+    ) %>%
     bind_cols ( metadata %>%
                   select ( -all_of(c("missing", "actual")))
-               ) %>%
+    ) %>%
     left_join ( labelling %>%
                   select ( all_of (c("indicator_code", "description_indicator"))),
-                  by = 'indicator_code' ) %>%
+                by = 'indicator_code' ) %>%
     select ( all_of(c("indicator_code", "title_at_source", "description_indicator",
                       "db_source_code",
                       "frequency","data_start", "data_end",
@@ -216,8 +217,8 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                       "last_structure_change",
                       "actual", "missing", "locf", "nocb", "interpolate",
                       "forecast", "backcast", "impute"
-                      ))
-             )
+    ))
+    )
 
   list ( indicator = indicator_final,
          labelling = labelling,
