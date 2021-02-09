@@ -11,6 +11,9 @@ map_indicator_eurostat(ids, path)
 
 \item{path}{A path to save the database.}
 }
+\value{
+An Sqlite database with two tables: metadata and labelling.
+}
 \description{
 Map Eurostat indicators into a databse
 }

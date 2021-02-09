@@ -162,6 +162,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                             "year", "month", "day",
                             "frequency", 'validate')),
                    remove = TRUE) %>%
+    rename ( value = values ) %>%
     mutate ( db_source_code = glue::glue ( "eurostat_{id}" ) ) %>%
     mutate ( db_source_code = tolower( as.character(.data$db_source_code)) ) %>%
     mutate ( indicator_code = tolower(paste0(db_source_code, "_", indicator_code)))

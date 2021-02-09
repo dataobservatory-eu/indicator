@@ -4,7 +4,7 @@
 #' @param path A path to save the database.
 #' @importFrom DBI dbWriteTable dbAppendTable dbDisconnect
 #' @importFrom RSQLite SQLite sqliteCopyDatabase
-#' @retrun An Sqlite database with two tables: metadata and labelling.
+#' @return An Sqlite database with two tables: metadata and labelling.
 #' @examples
 #' \dontrun{
 #' map_indicator_eurostat <- function (

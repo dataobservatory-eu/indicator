@@ -28,7 +28,11 @@ Imports:
     tidyr,
     snakecase,
     fs,
-    writexl
+    writexl,
+    zoo,
+    forecast,
+    timetk,
+    sweep
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
