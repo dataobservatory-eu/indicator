@@ -36,42 +36,20 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   indic_raw <- eurostat::get_eurostat(id)
 
+  indicator <- indic_raw %>%
+    rename ( value = values) %>%
+    tidy_indicator()
+
   ## The metadata columns do not have a strict ordering, except for the case when
   ## Eurostat has complex tables with several indicators in one data file ----
 
   indicator_labels <- indic_dict
 
-  indicator <- indic_raw %>%
-    mutate ( year  = as.integer(lubridate::year(.data$time)),
-             month = as.integer(lubridate::month(.data$time)),
-             day   = as.integer(lubridate::day(.data$time))
-             ) %>%
-    mutate ( frequency = case_when (
-      length( unique(.data$month) ) ==  1 ~ "A",
-      length( unique(.data$month) ) ==  4 ~ "Q",
-      length( unique(.data$day)   ) >= 28 ~ "D",
-      TRUE ~"M"
-    )) %>%
-    mutate ( unit = ifelse (
-      # if_else cannot be used here as length(condition) != length(true)
-      test = "unit" %in% names(.),
-      yes  = .data$unit,
-      no   = NA_character_ )
-             ) %>%
-    mutate ( validate = if_else (
-      condition = is.na(.data$values),
-      true = "missing",
-      false = "actual")
-      ) %>%
-    relocate ( # we want to have indicator identification elements first
-               any_of ( tolower(indicator_labels$code_name) )) %>%
-    relocate ( any_of (c("geo", "time", "values", "unit")) )
-
   ## The value labels do not have a strict ordering, except for the case when
   ## Eurostat has complex tables with several indicators in one data file ----
 
   val_labels <- indicator %>%
-    select ( -any_of (c("values", "geo", "time", "unit",
+    select ( -any_of (c("value", "geo", "time", "unit",
                         "year", "month", "day",
                         "frequency", "validate"))
              ) %>%
@@ -158,19 +136,16 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   indicator_final <- indicator %>%
     unite ( col = "indicator_code",
-                  -all_of(c("geo", "time", "values", "unit",
+                  -all_of(c("geo", "time", "value", "unit",
                             "year", "month", "day",
                             "frequency", 'validate')),
                    remove = TRUE) %>%
-    rename ( value = values ) %>%
     mutate ( db_source_code = glue::glue ( "eurostat_{id}" ) ) %>%
     mutate ( db_source_code = tolower( as.character(.data$db_source_code)) ) %>%
     mutate ( indicator_code = tolower(paste0(db_source_code, "_", indicator_code)))
 
   ## The metadata is based on the Eurostat metadata information, but
   ## includes frequency and the date of the data download ---------------------
-
-  eurostat_toc$`data end`
 
   metadata <- eurostat_toc %>%
     filter ( .data$code == id ) %>%
@@ -181,8 +156,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
              last_structure_change = .data$`last table structure change`,
              data_start = .data$`data start`,
              data_end = .data$`data end`,
-             title_at_source = .data$title,
-             value = .data$values ) %>%
+             title_at_source = .data$title ) %>%
     mutate ( db_source_code = paste0("eurostat_", .data$code),
              last_update_data_source = as.Date(.data$last_update_data, format = "%d.%m.%Y"),
              last_structure_change = as.Date(.data$last_update_data, format = "%d.%m.%Y"),

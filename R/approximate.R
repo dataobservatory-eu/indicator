@@ -10,11 +10,14 @@
 #' @return A tibble updated with with approximated values.
 #' @export
 
-
 na_approx <- function (indicator) {
 
 
   freq <- unique(indicator$frequency)
+
+  assertthat::assert_that(
+    length(unique(indicator$indicator_code)) == 1,
+    msg = 'The input has several indicators.')
 
   tmp <- indicator %>%
       select ( all_of(c("time", "geo", "value"))) %>%
@@ -44,26 +47,32 @@ na_approx <- function (indicator) {
                                       values_to = 'value' ),
                 by  = c('geo', 'time') )
 
-  indicator %>%
-    left_join ( long_form_approx, by = c("geo", "time", "value") ) %>%
+
+  long_form_approx %>%
+    tidy_indicator() %>%
     mutate ( validate = if_else(is.na(.data$value)&!is.na(.data$approx),
                                 "approx",
                                 .data$validate)) %>%
     mutate ( value = if_else ( validate == "approx",
-                               .data$approx, .data$value )) %>%
-    select ( -all_of("approx"))
-
+                               .data$approx,
+                               .data$value )) %>%
+    select ( -all_of(c("approx", "unit", "frequency")) ) %>%
+    left_join (   indicator %>%
+                    select(all_of(c("geo", "unit", "frequency", "indicator_code", "db_source_code"))) %>%
+                    distinct_all (),
+                  by = c("geo")) %>%
+    select ( all_of(names(indicator)))
 }
 
 
 #' Last observation carry forward
 #'
-#' @param indicator A tibble created by \code{get_eurostat_indicator}.
+#' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}.
 #' @importFrom timetk tk_ts
 #' @importFrom lubridate year
 #' @importFrom tidyr pivot_wider
 #' @importFrom dplyr select filter left_join mutate case_when
-#' @importFrom zoo na.locf.default
+#' @import zoo
 #' @return A tibble updated with the forward carried values.
 #' @export
 #'
@@ -87,7 +96,7 @@ na_locf <- function (indicator) {
                                                      freq == "M" ~ 12),
                            silent = TRUE)
 
-  locf <- zoo::na.locf.default(indy_ts)
+  locf <- zoo::na.locf(indy_ts)
 
   long_form_approx <- as.data.frame (locf) %>%
     bind_cols( tmp %>%
@@ -101,25 +110,30 @@ na_locf <- function (indicator) {
                                       values_to = 'value' ),
                 by  = c('geo', 'time') )
 
-  indicator %>%
-    left_join ( long_form_approx, by = c("geo", "time", "value") ) %>%
+  long_form_approx %>%
+    tidy_indicator() %>%
     mutate ( validate = if_else(is.na(.data$value)&!is.na(.data$locf),
                                 "locf",
-                                validate)) %>%
+                                .data$validate)) %>%
     mutate ( value = if_else ( validate == "locf",
-                               .data$locf, .data$value )) %>%
-    select ( -all_of("locf"))
+                               .data$locf,
+                               .data$value )) %>%
+    select ( -all_of(c("locf", "unit", "frequency")) ) %>%
+    left_join (   indicator %>%
+                    select(all_of(c("geo", "unit", "frequency", "indicator_code", "db_source_code"))) %>%
+                    distinct_all (),
+                  by = c("geo")) %>%
+    select ( all_of(names(indicator)))
 
 }
 
 #' Next observation carry back
 #'
-#' @param indicator A tibble created by \code{get_eurostat_indicator}.
+#' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}.
 #' @importFrom timetk tk_ts
 #' @importFrom lubridate year
 #' @importFrom tidyr pivot_wider
 #' @importFrom dplyr select filter left_join mutate
-#' @importFrom zoo na.lofc.default
 #' @return A tibble updated with the values carried back.
 #' @export
 
@@ -143,9 +157,10 @@ na_nocb <- function (indicator) {
                                                      freq == "M" ~ 12),
                            silent = TRUE)
 
-  locf <- zoo::na.locf.default(indy_ts)
+  nocb <- zoo::na.locf(indy_ts, fromLast = TRUE)
 
-  long_form_approx <- as.data.frame (locf) %>%
+
+  long_form_approx <- as.data.frame (nocb) %>%
     bind_cols( tmp %>%
                  select ( all_of("time"))
     ) %>%
@@ -157,21 +172,27 @@ na_nocb <- function (indicator) {
                                       values_to = 'value' ),
                 by  = c('geo', 'time') )
 
-  indicator %>%
-    left_join ( long_form_approx, by = c("geo", "time", "value") ) %>%
+  long_form_approx %>%
+    tidy_indicator() %>%
     mutate ( validate = if_else(is.na(.data$value)&!is.na(.data$nocb),
                                 "nocb",
-                                validate)) %>%
+                                .data$validate)) %>%
     mutate ( value = if_else ( validate == "nocb",
-                               .data$nocb, .data$value )) %>%
-    select ( -all_of("nocb"))
+                               .data$nocb,
+                               .data$value )) %>%
+    select ( -all_of(c("nocb", "unit", "frequency")) ) %>%
+    left_join (   indicator %>%
+                    select(all_of(c("geo", "unit", "frequency", "indicator_code", "db_source_code"))) %>%
+                    distinct_all (),
+                  by = c("geo")) %>%
+    select ( all_of(names(indicator)))
 
 }
 
 
 #' Forecast the indicator value
 #'
-#' @param indicator A tibble created by \code{get_eurostat_indicator}.
+#' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}.
 #' @importFrom timetk tk_ts tk_tbl
 #' @importFrom lubridate year
 #' @importFrom tidyr pivot_wider
@@ -203,7 +224,6 @@ indicator_forecast <- function (indicator) {
                            silent = TRUE)
 
   forecasted <- forecast::forecast(indy_ts)
-
 
   fcast_tbl <- sweep::sw_sweep(forecasted, timetk_idx = TRUE)
   methods <- sweep::sw_sweep(forecasted$method, timetk_idx = TRUE)

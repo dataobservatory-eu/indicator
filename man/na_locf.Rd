@@ -7,7 +7,7 @@
 na_locf(indicator)
 }
 \arguments{
-\item{indicator}{A tibble created by \code{get_eurostat_indicator}.}
+\item{indicator}{A tibble created by \code{\link{get_eurostat_indicator}}.}
 }
 \value{
 A tibble updated with the forward carried values.
