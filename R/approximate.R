@@ -63,9 +63,10 @@ na_approx <- function (indicator) {
 #' @importFrom lubridate year
 #' @importFrom tidyr pivot_wider
 #' @importFrom dplyr select filter left_join mutate case_when
-#' @importFrom zoo na.lofc
+#' @importFrom zoo na.locf.default
 #' @return A tibble updated with the forward carried values.
 #' @export
+#'
 
 na_locf <- function (indicator) {
 
@@ -86,7 +87,7 @@ na_locf <- function (indicator) {
                                                      freq == "M" ~ 12),
                            silent = TRUE)
 
-  locf <- zoo::na.locf(indy_ts)
+  locf <- zoo::na.locf.default(indy_ts)
 
   long_form_approx <- as.data.frame (locf) %>%
     bind_cols( tmp %>%
@@ -118,7 +119,7 @@ na_locf <- function (indicator) {
 #' @importFrom lubridate year
 #' @importFrom tidyr pivot_wider
 #' @importFrom dplyr select filter left_join mutate
-#' @importFrom zoo na.lofc
+#' @importFrom zoo na.lofc.default
 #' @return A tibble updated with the values carried back.
 #' @export
 
@@ -142,7 +143,7 @@ na_nocb <- function (indicator) {
                                                      freq == "M" ~ 12),
                            silent = TRUE)
 
-  locf <- zoo::na.locf(indy_ts)
+  locf <- zoo::na.locf.default(indy_ts)
 
   long_form_approx <- as.data.frame (locf) %>%
     bind_cols( tmp %>%
@@ -233,8 +234,5 @@ indicator_forecast <- function (indicator) {
                              true = point_forecast,
                              false = value ) ) %>%
     select (-all_of(c("forecast_method", "point_forecast")))
-
-
-
 }
 
