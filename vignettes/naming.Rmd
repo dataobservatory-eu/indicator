@@ -1,0 +1,75 @@
+---
+title: "Naming Conventions"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Naming Conventions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(indicators)
+```
+
+## Indicator Table 
+
+`indicator_code`: Unique code for the indicator; the values are unique in *indicator_code*, *geo*, *time*, *value*, and *unit*.
+`unit`: measurement unit or currency code
+`geo`: geographical code of observation
+`time`: Time of observation, as Date
+`value`: Value of observation or indicator
+`year`: Year of observation
+`month`: Month of observation (often notional for annual indicators)
+`day`: Day of observation
+`frequency`: Frequency of observation, currently *A*nnual, *Q*uarterly, *M*onthly, *D*aily, or unknown.
+`estimate`: See below.
+`db_source`: Database source code.
+
+### Estimates
+
+The `estimate` label describes the statistical technique used to impute missing values, or fix geographical coding.
+`actual`: The actual observation value at source, for example, by Eurostat.
+`missing`: Missing data, which is not filled by *locf*, *nocb*, *interpolate*, *forecast*, *backcaskt* or *impute*.
+`locf`: last observation carry forward
+`nocb`: next observation carry backward
+`interpolate`: interpolation in time between known values
+`forecast`: forecast with a given model.
+`backcast`: backcast with a given model.
+`impute`: An imputation technique was used that is not based on time series, but cross-selctional, geographical or other information. This is likely to be rather specific to the actual indicator.
+
+The `recode` means that the regional codes needed to be fixed.
+
+### Methods
+
+The `method` label describes the statistical technique used to give the parameters oft the estimate, if the estimate is parametric. 
+
+
+The `recode` means that the regional codes needed to be fixed.
+
+## Metadata 
+
+`indicator_code`: the same as in value table.
+`title_at_source`: The name, title, or other human understandable description of the original source.
+`description_indicator`: A short textual description of the indicator. [A longer should be generated in html somewhere.]
+`db_source_code`: A unique source code that contains both *indicator_code* and *source* for easier programatic updating.
+`frequency`: Frequency of the indicator observations, currently *A*nnual, *Q*uarterly, *M*onthly, *D*aily, or unknown.
+`data_start`: The minimum value of *actual* observations. Further values may be backcasted.
+`data_end`: The last value of *actual* observations.  Further values may be forecasted.
+`last_update_data_source`: Last update at the data source. 
+`last_structure_change`: Last structural change at source.
+`last_update_data`: Last time the observatory updated the data, including various imputations, forecasts and backcasts.
+`actual`: The  number of actual observation values at source, for example, by Eurostat.
+`missing`: Number of missing data, which is not filled by *locf*, *nocb*, *interpolate*, *forecast*, *backcaskt* or *impute*.
+`locf`: number of *last observation carry forward* imputated values
+`nocb`: number of *next observation carry backward* imputated values
+`interpolate`: number of *interpolated* values
+`forecast`: number of values *forecasted* with a given model.
+`backcast`: number of values *backcasted* with a given model.
+`impute`: number of values filled with any other *imputation* method that is not based on time series, but cross-selctional, geographical or other information.

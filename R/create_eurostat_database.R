@@ -12,11 +12,17 @@
 #'  path = 'not_included/example.db' )
 #' }
 
-map_indicator_eurostat <- function ( ids, path ) {
+create_eurostat_database <- function ( ids, path ) {
 
   con <- initialize_database()
 
   first <- get_eurostat_indicator(id = ids[1])
+
+  DBI::dbWriteTable(con, "indicator",
+                    first$indicator,
+                    overwrite = TRUE,
+                    row.names  = FALSE)
+
   DBI::dbWriteTable(con, "metadata",
                     first$metadata,
                     overwrite = TRUE,
@@ -32,6 +38,8 @@ map_indicator_eurostat <- function ( ids, path ) {
   while ( length(ids) >= i ) {
 
     tmp <- get_eurostat_indicator(ids[i])
+    DBI::dbAppendTable(con, "indicator",
+                       tmp$indicator)
     DBI::dbAppendTable(con, "metadata",
                        tmp$metadata)
     DBI::dbAppendTable(con, "labelling",

@@ -1,3 +1,26 @@
+#' Test Unique Observations
+#'
+#' Approximation and other filling techniques require unique observations
+#' @param indicator An indicator table to test.
+#' @param path A path to save the database.
+#' @importFrom dplyr select group_by add_count
+#' @return \code{NULL} if the test is met, otherwise and error message.
+#' @export
+
+test_unique_observations <- function( indicator ) {
+
+  uniqueness <- indicator %>%
+    dplyr::select ( all_of(c("geo", "time", "value", "estimate")) ) %>%
+    dplyr::group_by (  .data$geo, .data$time, .data$value ) %>%
+    add_count() %>%
+    filter ( n != 1 )
+
+  if ( nrow(uniqueness)==0 ) return(NULL) else {
+    stop ( uniqueness ,  "\n is not unique. This is an error." )
+  }
+}
+
+
 #' Linear approximation of missing values
 #'
 #' @param ids Identifiers of Eurostat statistical products.
@@ -12,15 +35,12 @@
 
 na_approx <- function (indicator) {
 
+  test_unique_observations(indicator)
 
   freq <- unique(indicator$frequency)
 
-  assertthat::assert_that(
-    length(unique(indicator$indicator_code)) == 1,
-    msg = 'The input has several indicators.')
-
   tmp <- indicator %>%
-      select ( all_of(c("time", "geo", "value"))) %>%
+      select ( all_of(c("time", "geo", "value", "method"))) %>%
       pivot_wider( names_from = "geo",
                    values_from = "value")
 
@@ -42,26 +62,17 @@ na_approx <- function (indicator) {
     pivot_longer( cols = -all_of("time"),
                   names_to = 'geo',
                   values_to = 'approx') %>%
-    left_join ( tmp %>% pivot_longer (cols = -all_of("time"),
-                                      names_to = 'geo',
-                                      values_to = 'value' ),
-                by  = c('geo', 'time') )
+    mutate ( method  = "approx") %>%
+    filter ( !is.na("approx"))
 
 
-  long_form_approx %>%
-    tidy_indicator() %>%
-    mutate ( validate = if_else(is.na(.data$value)&!is.na(.data$approx),
-                                "approx",
-                                .data$validate)) %>%
-    mutate ( value = if_else ( validate == "approx",
-                               .data$approx,
-                               .data$value )) %>%
-    select ( -all_of(c("approx", "unit", "frequency")) ) %>%
-    left_join (   indicator %>%
-                    select(all_of(c("geo", "unit", "frequency", "indicator_code", "db_source_code"))) %>%
-                    distinct_all (),
-                  by = c("geo")) %>%
-    select ( all_of(names(indicator)))
+
+  indicator %>%
+    dplyr::full_join (dplyr::anti_join (long_form_approx, indicator )  ) %>%
+    format_return_value( type_approx = "approx") %>%
+    mutate ( method = ifelse ( is.na(.data$value),
+                               "missing", .data$method ))
+
 }
 
 
@@ -79,6 +90,8 @@ na_approx <- function (indicator) {
 
 na_locf <- function (indicator) {
 
+
+  test_unique_observations(indicator)
 
   freq <- unique(indicator$frequency)
 
@@ -98,32 +111,21 @@ na_locf <- function (indicator) {
 
   locf <- zoo::na.locf(indy_ts)
 
-  long_form_approx <- as.data.frame (locf) %>%
+  long_form_approx <- as.data.frame (approximated) %>%
     bind_cols( tmp %>%
                  select ( all_of("time"))
     ) %>%
     pivot_longer( cols = -all_of("time"),
                   names_to = 'geo',
-                  values_to = 'locf') %>%
-    left_join ( tmp %>% pivot_longer (cols = -all_of("time"),
-                                      names_to = 'geo',
-                                      values_to = 'value' ),
-                by  = c('geo', 'time') )
+                  values_to = 'approx') %>%
+    mutate ( method  = "locf") %>%
+    filter ( !is.na("approx"))
 
-  long_form_approx %>%
-    tidy_indicator() %>%
-    mutate ( validate = if_else(is.na(.data$value)&!is.na(.data$locf),
-                                "locf",
-                                .data$validate)) %>%
-    mutate ( value = if_else ( validate == "locf",
-                               .data$locf,
-                               .data$value )) %>%
-    select ( -all_of(c("locf", "unit", "frequency")) ) %>%
-    left_join (   indicator %>%
-                    select(all_of(c("geo", "unit", "frequency", "indicator_code", "db_source_code"))) %>%
-                    distinct_all (),
-                  by = c("geo")) %>%
-    select ( all_of(names(indicator)))
+  indicator %>%
+    dplyr::full_join (dplyr::anti_join (long_form_approx, indicator )  ) %>%
+    format_return_value( type_approx = "locf") %>%
+    mutate ( method = ifelse ( is.na(.data$value),
+                               "missing", .data$method ))
 
 }
 
@@ -140,6 +142,7 @@ na_locf <- function (indicator) {
 
 na_nocb <- function (indicator) {
 
+  test_unique_observations(indicator)
 
   freq <- unique(indicator$frequency)
 
@@ -159,34 +162,44 @@ na_nocb <- function (indicator) {
 
   nocb <- zoo::na.locf(indy_ts, fromLast = TRUE)
 
-
-  long_form_approx <- as.data.frame (nocb) %>%
+  long_form_approx <- as.data.frame (approximated) %>%
     bind_cols( tmp %>%
                  select ( all_of("time"))
     ) %>%
     pivot_longer( cols = -all_of("time"),
                   names_to = 'geo',
-                  values_to = 'nocb') %>%
-    left_join ( tmp %>% pivot_longer (cols = -all_of("time"),
-                                      names_to = 'geo',
-                                      values_to = 'value' ),
-                by  = c('geo', 'time') )
+                  values_to = 'approx') %>%
+    mutate ( method  = "nocb") %>%
+    filter ( !is.na("approx"))
 
-  long_form_approx %>%
-    tidy_indicator() %>%
-    mutate ( validate = if_else(is.na(.data$value)&!is.na(.data$nocb),
-                                "nocb",
-                                .data$validate)) %>%
-    mutate ( value = if_else ( validate == "nocb",
-                               .data$nocb,
-                               .data$value )) %>%
-    select ( -all_of(c("nocb", "unit", "frequency")) ) %>%
-    left_join (   indicator %>%
-                    select(all_of(c("geo", "unit", "frequency", "indicator_code", "db_source_code"))) %>%
-                    distinct_all (),
-                  by = c("geo")) %>%
-    select ( all_of(names(indicator)))
+  indicator %>%
+    dplyr::full_join (dplyr::anti_join (long_form_approx, indicator )  ) %>%
+    format_return_value( type_approx = "nocb") %>%
+    mutate ( method = ifelse ( is.na(.data$value),
+                               "missing", .data$method ))
+}
 
+#' Format returned data table
+#' @param  One of \code{nocb}, \code{locf}, \code{forecast}, \code{backcast}
+#' @keywords internal
+
+format_return_value <- function( long_form_approx,
+                                 type_approx = "locf") {
+  tmp  <- long_form_approx %>%
+    mutate ( estimate = NA_character_) %>%
+    mutate ( method = ifelse(is.na(.data$value), "missing", .data$method)) %>%
+    mutate ( estimate = if_else(is.na(.data$value)&!is.na(.data$approx),
+                                type_approx ,
+                                .data$estimate)) %>%
+    mutate ( value = if_else ( estimate == type_approx,
+                               .data$approx,
+                               .data$value ))   %>%
+    tidy_indicator()   %>%
+    select ( -all_of(c("approx")) ) %>%
+    select ( any_of(c("geo", "time", "value", "year", "month", "day",
+                      "frequency", "estimate", "method")))
+
+  tmp
 }
 
 
@@ -206,6 +219,7 @@ na_nocb <- function (indicator) {
 
 indicator_forecast <- function (indicator) {
 
+  test_unique_observations(indicator)
 
   freq <- unique(indicator$frequency)
 
@@ -223,7 +237,15 @@ indicator_forecast <- function (indicator) {
                                                      freq == "M" ~ 12),
                            silent = TRUE)
 
-  forecasted <- forecast::forecast(indy_ts)
+
+  forecast_periods <- case_when (
+    freq == "A" ~ 3,
+    freq == "M" ~ 12,
+    freq == "Q" ~ 5,
+    freq == "D" ~ 30,
+    TRUE ~ 5)
+
+  forecasted <- forecast::forecast(indy_ts, h = forecast_periods )
 
   fcast_tbl <- sweep::sw_sweep(forecasted, timetk_idx = TRUE)
   methods <- sweep::sw_sweep(forecasted$method, timetk_idx = TRUE)
@@ -234,7 +256,8 @@ indicator_forecast <- function (indicator) {
     select ( all_of (c("time", "series", "point_forecast"))) %>%
     rename ( geo = .data$series ) %>%
     left_join ( data.frame ( geo = names(methods),
-                             forecast_method = as.character(methods) ),
+                             forecast_method = as.character(methods)
+                             ),
                 by = 'geo' )
 
   if (unique(indicator$frequency)=="A") {
@@ -245,14 +268,18 @@ indicator_forecast <- function (indicator) {
       select ( -all_of("md"))
   }
 
-  indicator %>%
-    left_join ( forecast_df, by = c("geo", "time") ) %>%
-    mutate ( validate = if_else(is.na(value) & !is.na(point_forecast),
-                             true = paste0("forecast_", forecast_method),
-                             false = validate )) %>%
-    mutate ( value = if_else(is.na(value) & !is.na(point_forecast),
-                             true = point_forecast,
-                             false = value ) ) %>%
-    select (-all_of(c("forecast_method", "point_forecast")))
+
+
+
+   indicator_with_method  <- indicator %>%
+    dplyr::full_join ( dplyr::anti_join (forecast_df, indicator ) ) %>%
+    mutate ( method = if_else(is.na(value) & !is.na(point_forecast),
+                                true = paste0("forecast_", forecast_method),
+                                false = estimate  )) %>%
+    rename ( approx = .data$point_forecast ) %>%
+    select (-any_of("forecast_method"))
+
+    format_return_value( long_form_approx = indicator_with_method,
+                         type_approx = "forecast")
 }
 

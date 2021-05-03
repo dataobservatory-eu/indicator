@@ -34,29 +34,34 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
     msg = glue::glue ("'{id}' is not a valid Eurostat product code")
     )
 
-  indic_raw <- eurostat::get_eurostat(id)
-
-  indicator <- indic_raw %>%
-    rename ( value = values) %>%
-    tidy_indicator()
-
   ## The metadata columns do not have a strict ordering, except for the case when
   ## Eurostat has complex tables with several indicators in one data file ----
 
   indicator_labels <- indic_dict
 
+  indic_downloaded <- eurostat::get_eurostat(id)
+
+  if (is.null(indic_downloaded)) {
+    indic_downloaded <- eurostat::get_eurostat(id)
+  }
+
+  if (is.null(indic_downloaded)) {
+    stop ("Download stopped")
+  }
+
+
   ## The value labels do not have a strict ordering, except for the case when
   ## Eurostat has complex tables with several indicators in one data file ----
 
-  val_labels <- indicator %>%
+  val_labels <- indic_downloaded %>%
     select ( -any_of (c("value", "geo", "time", "unit",
                         "year", "month", "day",
-                        "frequency", "validate"))
-             ) %>%
+                        "frequency", "estimate"))
+    ) %>%
     distinct_all()
 
   if ( any (names(val_labels) %in% tolower(indicator_labels$code_name)) &
-            ncol(val_labels) > 1 ) {
+       ncol(val_labels) > 1 ) {
     # reordering only makes sense if there are multiple columns and some of them
     # should be given priority
 
@@ -67,33 +72,69 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   }
 
+  indicator <- tidy_indicator ( indic_raw = indic_downloaded,
+                                indicator_labels = indicator_labels )
+
+
   description_raw <- NULL # for NSE in the next block
 
-  value_labels <- val_labels %>%
-    eurostat::label_eurostat()
+  ## Create the variable labeling -----------------
+  value_codes <- val_labels %>%
+    select (-any_of(c("time", "values"))) %>%
+    distinct_all()
 
-  labelling_table <- value_labels %>%
-    purrr::set_names( paste0(names(.), "_description")) %>%
-    bind_cols(val_labels) %>%
+  value_labelling <- value_codes %>%
+    eurostat::label_eurostat() %>%
+    purrr::set_names( paste0(names(.), "_description"))
+
+  value_labels <- value_codes %>%
+    bind_cols ( value_labelling ) %>%
     unite ( col = "indicator_code",
-                 -contains("description"),
-                  remove = FALSE
-            ) %>%
+            -contains("description"),
+            remove = FALSE
+    )
+
+  value_labelling <- value_labels %>%
     mutate ( indicator_code = glue::glue ( "eurostat_{id}_{indicator_code}")) %>%
     mutate ( db_source_code = paste0("eurostat_", id),
              indicator_code = tolower(as.character(.data$indicator_code)) ) %>%
     relocate ( any_of(c("db_source_code", "indicator_code")),
                .before = everything()
-               ) %>%
+    ) %>%
     unite ( col = description_indicator,
             contains("_description"),
             sep = " ",
             remove = FALSE ) %>%
-    mutate ( description_indicator = snakecase::to_sentence_case(.data$description_indicator) )
+    mutate ( description_indicator = snakecase::to_sentence_case(
+      .data$description_indicator)
+      )
 
-  ## Creating a complete coding / labelling table -----------------------------
 
-  indicator_description <- labelling_table %>%
+  ## Create the unit labeling -------------------
+  units <- indicator %>%
+    select ( any_of ("unit"))  %>%
+    distinct_all()
+
+  unit_labels <- eurostat::label_eurostat(units) %>%
+    mutate ( unit_label = paste0("[", .data$unit, "]")) %>%
+    select ( all_of("unit_label")) %>%
+    bind_cols ( units )
+
+  ## Add labelling to coded table -------------------------------------------
+  var_names <- names(value_labelling)[names(value_labelling) %in% names(indicator)]
+
+  indicator_table_labelled <- indicator %>%
+    left_join ( unit_labels, by = "unit" ) %>%
+    left_join ( value_labelling, by = var_names  ) %>%
+    tidyr::unite ( description_indicator, c("description_indicator", "unit_label"), sep = " ") %>%
+    select ( -any_of(c(var_names, paste0(var_names, ("_description"))))) %>%
+    relocate ( all_of(c("description_indicator", "geo", "time", "value",
+                        "unit","estimate", "method", "indicator_code")))
+
+
+  ## Creating a complete coding / labeling table -----------------------------
+
+  indicator_description <- value_labelling %>%
     select ( -contains("_description"))  %>%
     pivot_longer ( cols = -all_of(c("db_source_code", "indicator_code",
                                     "description_indicator")),
@@ -101,9 +142,8 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                    values_to = "code")
 
   variable_description <- value_labels %>%
-    set_names ( paste0(names(.), "_description")) %>%
-    bind_cols ( val_labels ) %>%
     distinct_all() %>%
+    select ( -any_of("indicator_code") ) %>%
     pivot_longer ( cols = contains( "_description"),
                    names_to  = "variable",
                    values_to = "description_variable") %>%
@@ -123,22 +163,24 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   assertthat::assert_that(
     length(indicator_frequency)==1,
-    msg = "The indicator frequency should be A, Q, M or D."
+    msg = "The indicator frequency should be A, Q, M, D or unknown."
     )
 
-  validation_summary <- summary ( as.factor(indicator$validate) )
+  estimation_summary <- summary ( as.factor(indicator$estimate) )
 
-  if (! "missing" %in% names(validation_summary) ) {
-    validation_summary <- c(validation_summary, c( missing = 0))
+  if (! "missing" %in% names(estimation_summary) ) {
+    # must have "actual" and "missing"
+    estimation_summary <- c(estimation_summary, c( missing = 0))
   }
 
   ## Finalize the indicator -----------------------------------------------------
 
   indicator_final <- indicator %>%
+
     unite ( col = "indicator_code",
                   -all_of(c("geo", "time", "value", "unit",
                             "year", "month", "day",
-                            "frequency", 'validate')),
+                            "frequency", 'estimate', "method")),
                    remove = TRUE) %>%
     mutate ( db_source_code = glue::glue ( "eurostat_{id}" ) ) %>%
     mutate ( db_source_code = tolower( as.character(.data$db_source_code)) ) %>%
@@ -164,17 +206,18 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
              data_start = as.character(.data$data_start),
              data_end = as.character(.data$data_end),
              frequency = indicator_frequency,
-             actual =  as.numeric(validation_summary["actual"]),
-             missing = as.numeric(validation_summary["missing"]),
+             actual =  as.numeric(estimation_summary["actual"]),
+             missing = as.numeric(estimation_summary["missing"]),
              locf = 0, nocb = 0, interpolate = 0,
-             forecast = 0, backcast = 0, impute =0 )
+             forecast = 0, backcast = 0, impute =0,
+             recode = 0)
 
   metadata_final <- indicator_final %>%
-    select ( all_of(c("indicator_code", "validate")) ) %>%
+    select ( all_of(c("indicator_code", "estimate")) ) %>%
     group_by_all() %>%
     add_count() %>%
     distinct_all() %>%
-    pivot_wider ( names_from = "validate",
+    pivot_wider ( names_from = "estimate",
                   values_from = "n",
                   values_fill = 0 ) %>%
     mutate ( missing = ifelse ( "missing" %in% names(.),
@@ -193,7 +236,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                       "last_update_data", "last_update_data_source",
                       "last_structure_change",
                       "actual", "missing", "locf", "nocb", "interpolate",
-                      "forecast", "backcast", "impute")
+                      "forecast", "backcast", "impute", "recode")
                     )
     )
 
@@ -201,3 +244,25 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
          labelling = labelling,
          metadata = metadata_final )
 }
+
+nnn <- get_eurostat_indicator(id= "tin00092")
+
+nst <- nnn$indicator %>%
+  dplyr::group_by ( indicator_code, unit, db_source_code ) %>%
+  tidyr::nest ( ) %>%
+  mutate ( approx = purrr::map ( .data$data, na_approx))
+
+a <-
+
+%>%
+  mutate ( approx = na_approx ( as.data.frame(data)))
+
+indicator <- nst$data[[1]]
+
+nst$data[[1]] %>% na_approx ( ) %>%
+  na_nocb( indicator = as.data.frame(.)) %>% na_locf(as.data.frame(.))
+
+
+  mutate ( approx = na_approx(.))
+
+indicator <- nst$data[[1]]
