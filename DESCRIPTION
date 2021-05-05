@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "daniel.antal@reprex.nl",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: Creates tidy and documented staistical indicators from various statistical warehouses.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
