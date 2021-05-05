@@ -1,18 +1,24 @@
-#' Map Eurostat indicators into a database
+#' Save Eurostat Indicators into a Database
 #'
+#' Download and process Eurostat indicators, create their labelling table and descriptive
+#' metadata about the indicators. Save the two metadata tables into metadata tables, and
+#' the tidy indicators themselves into an indicator table.
 #' @param ids Identifiers of Eurostat statistical products.
-#' @param path A path to save the database.
+#' @param db_path A path to save the database. Defaults to \code{tempdir()}
 #' @importFrom DBI dbWriteTable dbAppendTable dbDisconnect
 #' @importFrom RSQLite SQLite sqliteCopyDatabase
-#' @return An Sqlite database with two tables: metadata and labelling.
+#' @return An Sqlite database with three tables: indicator, metadata and labelling.
 #' @examples
 #' \dontrun{
-#' map_indicator_eurostat <- function (
-#'  ids = c("ISOC_R_BLT12_I", "isoc_cicce_use", "teicp090"),
-#'  path = 'not_included/example.db' )
+#' tmp_dir <- tempdir()
+#' create_eurostat_database (
+#'   ids = c("tin00092"),
+#'   db_path = file.path(tmp_dir, "example1.db")
+#' )
 #' }
+#' @export
 
-create_eurostat_database <- function ( ids, path ) {
+create_eurostat_database <- function ( ids, db_path = tempdir() ) {
 
   con <- initialize_database()
 
@@ -48,7 +54,7 @@ create_eurostat_database <- function ( ids, path ) {
     i <- i+1
   }
 
-  disc_con <- dbConnect(RSQLite::SQLite(), path )
+  disc_con <- dbConnect(RSQLite::SQLite(), db_path )
 
   DBI::dbListTables(con)
 

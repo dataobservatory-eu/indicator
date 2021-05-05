@@ -2,25 +2,29 @@
 % Please edit documentation in R/create_eurostat_database.R
 \name{create_eurostat_database}
 \alias{create_eurostat_database}
-\title{Map Eurostat indicators into a database}
+\title{Save Eurostat Indicators into a Database}
 \usage{
-create_eurostat_database(ids, path)
+create_eurostat_database(ids, db_path = tempdir())
 }
 \arguments{
 \item{ids}{Identifiers of Eurostat statistical products.}
 
-\item{path}{A path to save the database.}
+\item{db_path}{A path to save the database. Defaults to \code{tempdir()}}
 }
 \value{
-An Sqlite database with two tables: metadata and labelling.
+An Sqlite database with three tables: indicator, metadata and labelling.
 }
 \description{
-Map Eurostat indicators into a database
+Download and process Eurostat indicators, create their labelling table and descriptive
+metadata about the indicators. Save the two metadata tables into metadata tables, and
+the tidy indicators themselves into an indicator table.
 }
 \examples{
 \dontrun{
-map_indicator_eurostat <- function (
- ids = c("ISOC_R_BLT12_I", "isoc_cicce_use", "teicp090"),
- path = 'not_included/example.db' )
+tmp_dir <- tempdir()
+create_eurostat_database (
+  ids = c("tin00092"),
+  db_path = file.path(tmp_dir, "example1.db")
+)
 }
 }
