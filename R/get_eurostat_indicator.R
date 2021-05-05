@@ -21,7 +21,7 @@
 
 get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
-  . <- missing <- description_indicator <- indic_dict <- NULL
+  . <- description_indicator <- indic_dict <- NULL
 
   id <- tolower(id)
 
@@ -46,7 +46,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
   }
 
   if (is.null(indic_downloaded)) {
-    stop ("Download stopped")
+    stop ("Download stopped.")
   }
 
 
@@ -75,9 +75,6 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
   indicator <- indicators:::tidy_indicator ( indic_raw = indic_downloaded,
                                 indicator_labels = indicator_labels )
 
-
-  description_raw <- NULL # for NSE in the next block
-
   ## Create the variable labeling -----------------
   value_codes <- val_labels %>%
     select (-any_of(c("time", "values"))) %>%
@@ -89,7 +86,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   value_labels <- value_codes %>%
     bind_cols ( value_labelling ) %>%
-    unite ( col = "indicator_code",
+    tidyr::unite ( col = "indicator_code",
             -contains("description"),
             remove = FALSE
     )
@@ -101,7 +98,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
     relocate ( any_of(c("db_source_code", "indicator_code")),
                .before = everything()
     ) %>%
-    tidyr::unite ( col = description_indicator,
+    unite ( col = description_indicator,
             contains("_description"),
             sep = " ",
             remove = FALSE ) %>%
@@ -126,7 +123,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
   indicator_table_labelled <- indicator %>%
     left_join ( unit_labels, by = "unit" ) %>%
     left_join ( value_labelling, by = var_names  ) %>%
-    tidyr::unite ( description_indicator, c("description_indicator", "unit_label"), sep = " ") %>%
+    unite ( description_indicator, c("description_indicator", "unit_label"), sep = " ") %>%
     select ( -any_of(c(var_names, paste0(var_names, ("_description"))))) %>%
     relocate ( all_of(c("description_indicator", "geo", "time", "value",
                         "unit","estimate", "method", "indicator_code")))

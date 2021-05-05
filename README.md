@@ -4,6 +4,8 @@
 # indicators
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/dataobservatory-eu/indicator/workflows/R-CMD-check/badge.svg)](https://github.com/dataobservatory-eu/indicator/actions)
 <!-- badges: end -->
 
 The goal of indicators is to …

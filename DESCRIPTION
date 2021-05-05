@@ -6,7 +6,7 @@ Authors@R:
            family = "Antal",
            role = c("aut", "cre"),
            email = "daniel.antal@reprex.nl",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0000-0001-7513-6760"))
 Description: Creates tidy and documented staistical indicators from various statistical warehouses.
 License: GPL (>= 3)
 Encoding: UTF-8
@@ -32,7 +32,8 @@ Imports:
     zoo,
     forecast,
     timetk,
-    sweep
+    sweep,
+    stringr
 Suggests: 
     rmarkdown,
     knitr,

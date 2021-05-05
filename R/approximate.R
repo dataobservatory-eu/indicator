@@ -28,7 +28,7 @@ test_unique_observations <- function( indicator ) {
 #' @importFrom timetk tk_ts
 #' @importFrom lubridate year
 #' @importFrom tidyr pivot_wider
-#' @importFrom dplyr select filter left_join mutate case_when
+#' @importFrom dplyr select filter left_join mutate case_when full_join anti_join
 #' @importFrom zoo na.approx
 #' @return A tibble updated with with approximated values.
 #' @export
@@ -68,7 +68,7 @@ na_approx <- function (indicator) {
 
 
   indicator %>%
-    dplyr::full_join (dplyr::anti_join (long_form_approx, indicator )  ) %>%
+    full_join ( anti_join (long_form_approx, indicator )  ) %>%
     format_return_value( type_approx = "approx") %>%
     mutate ( method = ifelse ( is.na(.data$value),
                                "missing", .data$method ))
@@ -122,7 +122,7 @@ na_locf <- function (indicator) {
     filter ( !is.na("approx"))
 
   indicator %>%
-    dplyr::full_join (dplyr::anti_join (long_form_approx, indicator )  ) %>%
+    full_join ( anti_join (long_form_approx, indicator )  ) %>%
     format_return_value( type_approx = "locf") %>%
     mutate ( method = ifelse ( is.na(.data$value),
                                "missing", .data$method ))
@@ -211,6 +211,7 @@ format_return_value <- function( long_form_approx,
 #' @importFrom tidyr pivot_wider
 #' @importFrom dplyr select filter left_join mutate case_when
 #' @importFrom sweep sw_sweep
+#' @importFrom stringr str_sub
 #' @importFrom forecast forecast
 #' @importFrom tidyselect all_of
 #' @return A tibble updated with with forecasted values.
@@ -252,18 +253,20 @@ indicator_forecast <- function (indicator) {
 
   ff <- timetk::tk_tbl(fcast_tbl, silent=TRUE)
 
-  forecast_df <- ff  %>% set_names ( snakecase::to_snake_case(names(.))) %>%
+  forecast_df <- ff  %>%
+    set_names ( snakecase::to_snake_case(names(.))) %>%
     select ( all_of (c("time", "series", "point_forecast"))) %>%
     rename ( geo = .data$series ) %>%
-    left_join ( data.frame ( geo = names(methods),
-                             forecast_method = as.character(methods)
-                             ),
-                by = 'geo' )
+    left_join ( data.frame (
+      geo = names(methods),
+      forecast_method = as.character(methods)
+    ),
+    by = 'geo' )
 
   if (unique(indicator$frequency)=="A") {
 
     forecast_df <- forecast_df %>%
-      mutate ( md = stringr::str_sub(as.character(indicator$time), 5,-1)[1]) %>%
+      mutate ( md = str_sub(as.character(indicator$time), 5,-1)[1]) %>%
       mutate ( time = as.Date ( paste0(as.character(time), md))) %>%
       select ( -all_of("md"))
   }
@@ -272,7 +275,7 @@ indicator_forecast <- function (indicator) {
 
 
    indicator_with_method  <- indicator %>%
-    dplyr::full_join ( dplyr::anti_join (forecast_df, indicator ) ) %>%
+    full_join ( anti_join (forecast_df, indicator ) ) %>%
     mutate ( method = if_else(is.na(value) & !is.na(point_forecast),
                                 true = paste0("forecast_", forecast_method),
                                 false = estimate  )) %>%

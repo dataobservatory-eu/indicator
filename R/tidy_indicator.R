@@ -10,7 +10,7 @@
 tidy_indicator <- function ( indic_raw, indicator_labels = NULL ) {
 
   if ( "values" %in% names (indic_raw) ) {
-    indic_raw <- indic_downloaded %>%
+    indic_raw <- indic_raw %>%
       rename ( value = .data$values)
   }
 
