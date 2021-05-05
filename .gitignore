@@ -7,3 +7,5 @@ not_included
 inst/doc
 /doc/
 /Meta/
+rsconnect
+^rsconnect$

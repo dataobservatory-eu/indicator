@@ -2,6 +2,7 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 
+^rsconnect$
 ^not_included$
 ^data-raw$
 ^CODE_OF_CONDUCT\.md$
