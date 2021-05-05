@@ -245,24 +245,3 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
          metadata = metadata_final )
 }
 
-nnn <- get_eurostat_indicator(id= "tin00092")
-
-nst <- nnn$indicator %>%
-  dplyr::group_by ( indicator_code, unit, db_source_code ) %>%
-  tidyr::nest ( ) %>%
-  mutate ( approx = purrr::map ( .data$data, na_approx))
-
-a <-
-
-%>%
-  mutate ( approx = na_approx ( as.data.frame(data)))
-
-indicator <- nst$data[[1]]
-
-nst$data[[1]] %>% na_approx ( ) %>%
-  na_nocb( indicator = as.data.frame(.)) %>% na_locf(as.data.frame(.))
-
-
-  mutate ( approx = na_approx(.))
-
-indicator <- nst$data[[1]]
