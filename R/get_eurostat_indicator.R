@@ -72,7 +72,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   }
 
-  indicator <- tidy_indicator ( indic_raw = indic_downloaded,
+  indicator <- indicators:::tidy_indicator ( indic_raw = indic_downloaded,
                                 indicator_labels = indicator_labels )
 
 

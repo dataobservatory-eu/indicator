@@ -20,7 +20,7 @@ devtools::install_github("dataobservatory-eu/indicator")
 ```
 
 
-```{r setup}
+```{r setup, echo=FALSE}
 library(indicators)
 library(dplyr)
 library(knitr)
