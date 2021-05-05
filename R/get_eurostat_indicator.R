@@ -101,7 +101,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
     relocate ( any_of(c("db_source_code", "indicator_code")),
                .before = everything()
     ) %>%
-    unite ( col = description_indicator,
+    tidyr::unite ( col = description_indicator,
             contains("_description"),
             sep = " ",
             remove = FALSE ) %>%

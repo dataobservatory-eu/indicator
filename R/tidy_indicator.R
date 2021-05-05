@@ -3,7 +3,7 @@
 #' @param indic_raw A raw Eurostat indicator
 #' @param indicator_labels The codes and description of \code{indic} columns.
 #' @importFrom lubridate day month year
-#' @importFrom dplyr case_when mutate if_else relocate
+#' @importFrom dplyr case_when mutate if_else relocate rename
 #' @importFrom tidyselect any_of
 #' @keywords internal
 
