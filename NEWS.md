@@ -1,3 +1,5 @@
 3# indicators 0.0.0.9000
 
 * Added a `NEWS.md` file to track changes to the package.
+* Added vignettes `Naming Conventions` and `Data Acquisition from Eurostat`.
+* Create the `test_db.db` from the `README.md` example.

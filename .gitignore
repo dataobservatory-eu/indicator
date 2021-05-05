@@ -5,3 +5,5 @@
 indicator.Rproj
 not_included
 inst/doc
+/doc/
+/Meta/
