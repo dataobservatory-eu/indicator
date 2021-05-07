@@ -2,7 +2,6 @@
 #'
 #' Approximation and other filling techniques require unique observations
 #' @param indicator An indicator table to test.
-#' @param path A path to save the database.
 #' @importFrom dplyr select group_by add_count
 #' @return \code{NULL} if the test is met, otherwise and error message.
 #' @export
@@ -23,8 +22,8 @@ test_unique_observations <- function( indicator ) {
 
 #' Linear approximation of missing values
 #'
-#' @param ids Identifiers of Eurostat statistical products.
-#' @param path A path to save the database.
+#' @param indicator a character string with the indicator name
+#'
 #' @importFrom timetk tk_ts
 #' @importFrom lubridate year
 #' @importFrom tidyr pivot_wider

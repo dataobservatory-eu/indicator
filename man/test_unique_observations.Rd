@@ -8,8 +8,6 @@ test_unique_observations(indicator)
 }
 \arguments{
 \item{indicator}{An indicator table to test.}
-
-\item{path}{A path to save the database.}
 }
 \value{
 \code{NULL} if the test is met, otherwise and error message.

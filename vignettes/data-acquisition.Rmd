@@ -7,46 +7,46 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-```
 
-```{r github-install, eval=FALSE}
+
+
+
+
+```r
 # This is at the moment a private repo
 devtools::install_github("dataobservatory-eu/indicator")
 ```
 
 
-```{r setup, echo=FALSE}
-library(indicators)
+```r
+library(devtools)
 library(dplyr)
 library(knitr)
 require(kableExtra)
+library(indicator)
 ```
-
 ## Working with Eurostat Data
 
 The [eurostat](http://ropengov.github.io/eurostat/index.html) package handles interaction with the Eurostat data warehouse. Unfortunately, after many years of stable work, recently we have short outages on the Eurostat server.  So the `get_eurostat_indicator()` should get a short extension that retries the download via `eurostat::get_eurostat()`several times if it receives a `NULL` return.
 
-```{r data-from-eurostat, eval=FALSE}
-airp <- get_eurostat_indicator (id= "ENV_AIR_EMIS")
+
+```r
+airp <- get_eurostat_indicator (id="ENV_AIR_EMIS")
 save_dir <- ifelse ( dir.exists("data-raw"), "data-raw", file.path("..", "data-raw") ) 
 save( airp, file = file.path(save_dir, "airp.rda") )
 ```
 As it can be seen from the message, the [eurostat](http://ropengov.github.io/eurostat/index.html) package downloads the latest data from the warehouse and saves it to the `tempdir()`. The `tempdir` is a temporary directory of any R environment. It means that a few megabytes of disk space must be available on the instance to run properly. 
 
-```{r load-presaved}
-load_dir <- ifelse ( dir.exists("data-raw"), "data-raw", file.path("..", "data-raw") ) 
-load (file.path(load_dir, "airp.rda"))
+
+```r
+load_dir <- ifelse(dir.exists("data-raw"), "data-raw", file.path("..", "data-raw") ) 
+load(file.path(load_dir, "airp.rda"))
 ```
 
 
 The eurostat id `ENV_AIR_EMIS` refers to the [Air pollutants by source sector (source: EEA)](https://ec.europa.eu/eurostat/databrowser/view/env_air_emis/default/table?lang=en) dataset. (See metadata description [here](https://ec.europa.eu/eurostat/cache/metadata/en/env_air_emis_esms.htm)) The eurostat package handles the interaction with Eurostat, i.e. downloading, tidying the data and using the correct metadata dictionary for labelling the data, with the important exception of sub-national (regional, metropolitan area) data.  That must be managed by an offspring of the [eurostat](http://ropengov.github.io/eurostat/index.html) package, namely our package [regions](https://regions.dataobservatory.eu/).
 
-This actual data product is a database in itself, it contains `r length(unique ( airp$metadata$description_indicator))` unique environmental indicators about air pollution passed on to the Eurostat by the European Environmental Agency.  Why so many?  These indicators show 15 greenhouse gases and air pollutants,  for 35 geographical entities, over 10 years and  
+This actual data product is a database in itself, it contains 2043 unique environmental indicators about air pollution passed on to the Eurostat by the European Environmental Agency.  Why so many?  These indicators show 15 greenhouse gases and air pollutants,  for 35 geographical entities, over 10 years and  
 dozens of industries. These indicators with a lot of processing could be ideally used for environmental impact assessment together with our [iotables](https://iotables.dataobservatory.eu/) package. For example, we can calculate the likely increase/decrease of methane from various economic policy interventions on the agricultural sub-sectors.
 
 ## Data Tables
@@ -55,7 +55,8 @@ The function `get_eurostat_indicator()` returns a list of three tables, and crea
 
 ### Metadata
 
-```{r example-metadata, results='asis'}
+
+```r
 airp$metadata %>%
   select ( all_of(c("description_indicator", "indicator_code", "actual", "missing"))) %>%
   filter ( grepl("forest fires", .data$description_indicator)) %>%
@@ -63,14 +64,461 @@ airp$metadata %>%
   kbl() 
 ```
 
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> description_indicator </th>
+   <th style="text-align:left;"> indicator_code </th>
+   <th style="text-align:right;"> actual </th>
+   <th style="text-align:right;"> missing </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> Arsenic as forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_as_nfr11b </td>
+   <td style="text-align:right;"> 363 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Cadmium cd forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_cd_nfr11b </td>
+   <td style="text-align:right;"> 392 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Chromium cr forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_cr_nfr11b </td>
+   <td style="text-align:right;"> 363 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Copper cu forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_cu_nfr11b </td>
+   <td style="text-align:right;"> 363 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Mercury hg forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_hg_nfr11b </td>
+   <td style="text-align:right;"> 392 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Ammonia forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_nh3_nfr11b </td>
+   <td style="text-align:right;"> 676 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Nickel ni forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_ni_nfr11b </td>
+   <td style="text-align:right;"> 363 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Non methane volatile organic compounds forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_nmvoc_nfr11b </td>
+   <td style="text-align:right;"> 676 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Nitrogen oxides forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_nox_nfr11b </td>
+   <td style="text-align:right;"> 676 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Lead pb forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_pb_nfr11b </td>
+   <td style="text-align:right;"> 392 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Particulates 10 µm forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_pm10_nfr11b </td>
+   <td style="text-align:right;"> 624 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Particulates 2 5 µm forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_pm2_5_nfr11b </td>
+   <td style="text-align:right;"> 624 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Selenium se forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_se_nfr11b </td>
+   <td style="text-align:right;"> 334 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Sulphur oxides forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_sox_nfr11b </td>
+   <td style="text-align:right;"> 676 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Zinc zn forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_zn_nfr11b </td>
+   <td style="text-align:right;"> 348 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+</tbody>
+</table>
+
 The entire (filtered) metadata for forest fires: 
 
-```{r example-forest-fires, results='asis'}
+
+```r
 airp$metadata %>%
   filter ( grepl("forest fires", .data$description_indicator)) %>%
   distinct_all() %>%
   kbl() 
 ```
+
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> indicator_code </th>
+   <th style="text-align:left;"> title_at_source </th>
+   <th style="text-align:left;"> description_indicator </th>
+   <th style="text-align:left;"> db_source_code </th>
+   <th style="text-align:left;"> frequency </th>
+   <th style="text-align:left;"> data_start </th>
+   <th style="text-align:left;"> data_end </th>
+   <th style="text-align:left;"> last_update_data </th>
+   <th style="text-align:left;"> last_update_data_source </th>
+   <th style="text-align:left;"> last_structure_change </th>
+   <th style="text-align:right;"> actual </th>
+   <th style="text-align:right;"> missing </th>
+   <th style="text-align:right;"> locf </th>
+   <th style="text-align:right;"> nocb </th>
+   <th style="text-align:right;"> interpolate </th>
+   <th style="text-align:right;"> forecast </th>
+   <th style="text-align:right;"> backcast </th>
+   <th style="text-align:right;"> impute </th>
+   <th style="text-align:right;"> recode </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_as_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Arsenic as forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 363 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_cd_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Cadmium cd forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 392 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_cr_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Chromium cr forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 363 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_cu_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Copper cu forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 363 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_hg_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Mercury hg forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 392 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_nh3_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Ammonia forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 676 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_ni_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Nickel ni forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 363 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_nmvoc_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Non methane volatile organic compounds forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 676 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_nox_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Nitrogen oxides forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 676 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_pb_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Lead pb forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 392 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_pm10_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Particulates 10 µm forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 624 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_pm2_5_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Particulates 2 5 µm forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 624 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_se_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Selenium se forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 334 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_sox_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Sulphur oxides forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 676 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis_zn_nfr11b </td>
+   <td style="text-align:left;"> Air pollutants by source sector (source: EEA) </td>
+   <td style="text-align:left;"> Zinc zn forest fires </td>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> A </td>
+   <td style="text-align:left;"> 1990 </td>
+   <td style="text-align:left;"> 2018 </td>
+   <td style="text-align:left;"> 2021-05-07 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:left;"> 2020-11-25 </td>
+   <td style="text-align:right;"> 348 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+  </tr>
+</tbody>
+</table>
 
 There are no missing variables here, but of course, we could forecast or backcast values per geographical entity, in this case, countries.
 
@@ -78,19 +526,276 @@ There are no missing variables here, but of course, we could forecast or backcas
 
 The `get_eurostat_indicator()` function saves the entire dictionary that allows the programmatic description of the data. For example, in the original database, `AS` abbreviates any pollution related to `Arsenic (As)`, or 	`NFR11B` is the activity code of the polluting process `Forest fires`. 
 
-```{r example-labelling}
+
+```r
 airp$labelling %>%
   filter ( grepl("forest fires", .data$description_indicator)) %>%
   distinct_all() %>%
   kbl ()
 ```
 
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> db_source_code </th>
+   <th style="text-align:left;"> indicator_code </th>
+   <th style="text-align:left;"> description_indicator </th>
+   <th style="text-align:left;"> variable </th>
+   <th style="text-align:left;"> code </th>
+   <th style="text-align:left;"> description_variable </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_as_nfr11b </td>
+   <td style="text-align:left;"> Arsenic as forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> AS </td>
+   <td style="text-align:left;"> Arsenic (As) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_as_nfr11b </td>
+   <td style="text-align:left;"> Arsenic as forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_cd_nfr11b </td>
+   <td style="text-align:left;"> Cadmium cd forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> CD </td>
+   <td style="text-align:left;"> Cadmium (Cd) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_cd_nfr11b </td>
+   <td style="text-align:left;"> Cadmium cd forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_cr_nfr11b </td>
+   <td style="text-align:left;"> Chromium cr forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> CR </td>
+   <td style="text-align:left;"> Chromium (Cr) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_cr_nfr11b </td>
+   <td style="text-align:left;"> Chromium cr forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_cu_nfr11b </td>
+   <td style="text-align:left;"> Copper cu forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> CU </td>
+   <td style="text-align:left;"> Copper (Cu) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_cu_nfr11b </td>
+   <td style="text-align:left;"> Copper cu forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_hg_nfr11b </td>
+   <td style="text-align:left;"> Mercury hg forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> HG </td>
+   <td style="text-align:left;"> Mercury (Hg) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_hg_nfr11b </td>
+   <td style="text-align:left;"> Mercury hg forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_nh3_nfr11b </td>
+   <td style="text-align:left;"> Ammonia forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> NH3 </td>
+   <td style="text-align:left;"> Ammonia </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_nh3_nfr11b </td>
+   <td style="text-align:left;"> Ammonia forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_ni_nfr11b </td>
+   <td style="text-align:left;"> Nickel ni forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> NI </td>
+   <td style="text-align:left;"> Nickel (Ni) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_ni_nfr11b </td>
+   <td style="text-align:left;"> Nickel ni forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_nmvoc_nfr11b </td>
+   <td style="text-align:left;"> Non methane volatile organic compounds forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> NMVOC </td>
+   <td style="text-align:left;"> Non-methane volatile organic compounds </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_nmvoc_nfr11b </td>
+   <td style="text-align:left;"> Non methane volatile organic compounds forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_nox_nfr11b </td>
+   <td style="text-align:left;"> Nitrogen oxides forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> NOX </td>
+   <td style="text-align:left;"> Nitrogen oxides </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_nox_nfr11b </td>
+   <td style="text-align:left;"> Nitrogen oxides forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_pb_nfr11b </td>
+   <td style="text-align:left;"> Lead pb forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> PB </td>
+   <td style="text-align:left;"> Lead (Pb) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_pb_nfr11b </td>
+   <td style="text-align:left;"> Lead pb forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_pm10_nfr11b </td>
+   <td style="text-align:left;"> Particulates 10 µm forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> PM10 </td>
+   <td style="text-align:left;"> Particulates &lt; 10µm </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_pm10_nfr11b </td>
+   <td style="text-align:left;"> Particulates 10 µm forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_pm2_5_nfr11b </td>
+   <td style="text-align:left;"> Particulates 2 5 µm forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> PM2_5 </td>
+   <td style="text-align:left;"> Particulates &lt; 2.5µm </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_pm2_5_nfr11b </td>
+   <td style="text-align:left;"> Particulates 2 5 µm forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_se_nfr11b </td>
+   <td style="text-align:left;"> Selenium se forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> SE </td>
+   <td style="text-align:left;"> Selenium (Se) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_se_nfr11b </td>
+   <td style="text-align:left;"> Selenium se forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_sox_nfr11b </td>
+   <td style="text-align:left;"> Sulphur oxides forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> SOX </td>
+   <td style="text-align:left;"> Sulphur oxides </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_sox_nfr11b </td>
+   <td style="text-align:left;"> Sulphur oxides forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_zn_nfr11b </td>
+   <td style="text-align:left;"> Zinc zn forest fires </td>
+   <td style="text-align:left;"> airpol </td>
+   <td style="text-align:left;"> ZN </td>
+   <td style="text-align:left;"> Zinc (Zn) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> eurostat_env_air_emis </td>
+   <td style="text-align:left;"> eurostat_env_air_emis_zn_nfr11b </td>
+   <td style="text-align:left;"> Zinc zn forest fires </td>
+   <td style="text-align:left;"> src_nfr </td>
+   <td style="text-align:left;"> NFR11B </td>
+   <td style="text-align:left;"> Forest fires </td>
+  </tr>
+</tbody>
+</table>
+
 
 ### Statistical Indicators
 
 Of course, the most important element of the list returned by The `get_eurostat_indicator()` is the actual value of the indicator.
 
-```{r example-indicator}
+
+```r
 select_indicators <- airp$metadata %>%
         filter ( grepl("forest fires", .data$description_indicator)) %>%
         distinct ( .data$indicator_code ) %>% unlist () %>% as.character() 
@@ -102,5 +807,21 @@ airp$indicator %>%
       ) %>%
   distinct_all() %>%
   head(12) 
+#> # A tibble: 12 x 12
+#>    indicator_code unit  geo   time       value estimate method  year month   day frequency
+#>    <chr>          <chr> <chr> <date>     <dbl> <chr>    <chr>  <int> <int> <int> <chr>    
+#>  1 eurostat_env_… T     BE    2018-01-01     0 actual   actual  2018     1     1 A        
+#>  2 eurostat_env_… T     BG    2018-01-01     0 actual   actual  2018     1     1 A        
+#>  3 eurostat_env_… T     CH    2018-01-01     0 actual   actual  2018     1     1 A        
+#>  4 eurostat_env_… T     DE    2018-01-01     0 actual   actual  2018     1     1 A        
+#>  5 eurostat_env_… T     FI    2018-01-01     0 actual   actual  2018     1     1 A        
+#>  6 eurostat_env_… T     HR    2018-01-01     0 actual   actual  2018     1     1 A        
+#>  7 eurostat_env_… T     IE    2018-01-01     0 actual   actual  2018     1     1 A        
+#>  8 eurostat_env_… T     IT    2018-01-01     0 actual   actual  2018     1     1 A        
+#>  9 eurostat_env_… T     LV    2018-01-01     0 actual   actual  2018     1     1 A        
+#> 10 eurostat_env_… T     PL    2018-01-01     0 actual   actual  2018     1     1 A        
+#> 11 eurostat_env_… T     RO    2018-01-01     0 actual   actual  2018     1     1 A        
+#> 12 eurostat_env_… T     UK    2018-01-01     0 actual   actual  2018     1     1 A        
+#> # … with 1 more variable: db_source_code <chr>
 ```
 

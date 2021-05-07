@@ -9,3 +9,6 @@ inst/doc
 /Meta/
 rsconnect
 ^rsconnect$
+.DS_Store
+doc
+Meta
