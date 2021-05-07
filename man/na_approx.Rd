@@ -7,9 +7,7 @@
 na_approx(indicator)
 }
 \arguments{
-\item{ids}{Identifiers of Eurostat statistical products.}
-
-\item{path}{A path to save the database.}
+\item{indicator}{a character string with the indicator name}
 }
 \value{
 A tibble updated with with approximated values.
