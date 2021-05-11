@@ -3,6 +3,7 @@
 #' Approximation and other filling techniques require unique observations
 #' @param indicator An indicator table to test.
 #' @importFrom dplyr select group_by add_count filter
+#' @importFrom assertthat assert_that
 #' @return \code{TRUE} if the test is met, otherwise and error message.
 #' @export
 
@@ -14,9 +15,9 @@ test_unique_observations <- function( indicator ) {
     add_count() %>%
     filter ( n != 1 )
 
-  if (nrow(uniqueness)==0) return(TRUE) else {
-    stop ( uniqueness,  "\n is not unique. This is an error." )
-  }
+  assertthat::assert_that(nrow(uniqueness)==0,
+                          msg= "test_unique_observations() found non-unique values.")
+
 }
 
 #' Create Time Series Object
