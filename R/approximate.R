@@ -26,10 +26,16 @@ test_unique_observations <- function( indicator ) {
 #' @importFrom timetk tk_ts
 #' @importFrom dplyr case_when
 #' @importFrom lubridate ymd
+#' @importFrom glue glue
 #' @return \code{TRUE} if the test is met, otherwise and error message.
 #' @keywords internal
 
 create_time_series <- function( tmp ) {
+
+  freq <- unique(tmp$frequency)
+
+  assertthat::assert_that(length(freq)==1,
+                          msg =  glue::glue( "There are several frequency types found: {freq}. This is an error.") )
 
   start_value <- lubridate::ymd(min(tmp$time))
 
@@ -58,14 +64,13 @@ na_approx <- function (indicator) {
 
   test_unique_observations(indicator)
 
-  freq <- unique(indicator$frequency)
-
   tmp <- indicator %>%
-      select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
-      pivot_wider( names_from = "geo",
-                   values_from = "value")
+    select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
+    pivot_wider( names_from = "geo",
+                 values_from = "value")
 
-  indicatot_ts <- create_time_series(tmp)
+  indicator_ts <- create_time_series(tmp)
+
   approximated <- zoo::na.approx(indicator_ts)
 
   long_form_approx <- as.data.frame (approximated) %>% # assinged for easier debugging
@@ -110,8 +115,6 @@ na_approx <- function (indicator) {
 na_locf <- function (indicator) {
 
   test_unique_observations(indicator)
-
-  freq <- unique(indicator$frequency)
 
   tmp <- indicator %>%
     select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
@@ -163,8 +166,6 @@ na_nocb <- function (indicator) {
 
   test_unique_observations(indicator)
 
-  freq <- unique(indicator$frequency)
-
   tmp <- indicator %>%
     select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
     pivot_wider( names_from = "geo",
@@ -205,6 +206,10 @@ na_nocb <- function (indicator) {
 
 format_return_value <- function( long_form_approx,
                                  type_approx = "locf") {
+
+
+  message ( "This function is no longer needed.")
+  return(NULL)
   tmp  <- long_form_approx %>%
     mutate ( estimate = NA_character_) %>%
     mutate ( method = ifelse(is.na(.data$value), "missing", .data$method)) %>%
@@ -245,8 +250,6 @@ format_return_value <- function( long_form_approx,
 indicator_forecast <- function (indicator, forecast_periods = NULL) {
 
   test_unique_observations(indicator)
-
-  freq <- unique(indicator$frequency)
 
   message ("this should be rewritten")
   return(NULL)

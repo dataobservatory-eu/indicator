@@ -1,6 +1,3 @@
-
-
-
 benelux_linear <- data.frame (
   time = as.Date (paste0(2010:2020, "-01-01")),
   NL = seq ( 30, 50, by = 2),
@@ -18,6 +15,7 @@ benelux_linear_long <- tidyr::pivot_longer( benelux_linear,
   mutate ( estimate = ifelse (is.na(value), "missing", "actual")) %>%
   mutate ( frequency = "A",
            method = estimate )
+
 indicator <- benelux_linear_long
 
 test_that("unique indicator value tests", {
