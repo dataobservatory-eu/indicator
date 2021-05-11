@@ -1,10 +1,13 @@
 #' Tidy raw indicator
 #'
+#' The indicator downloaded from Eurostat is brought to a tidy format.
+#'
 #' @param indic_raw A raw Eurostat indicator
 #' @param indicator_labels The codes and description of \code{indic} columns.
 #' @importFrom lubridate day month year
 #' @importFrom dplyr case_when mutate if_else relocate rename
 #' @importFrom tidyselect any_of
+#' @return A tibble with fixed form.
 #' @keywords internal
 
 tidy_indicator <- function ( indic_raw, indicator_labels = NULL ) {

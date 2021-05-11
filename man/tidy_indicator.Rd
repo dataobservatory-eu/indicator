@@ -11,7 +11,10 @@ tidy_indicator(indic_raw, indicator_labels = NULL)
 
 \item{indicator_labels}{The codes and description of \code{indic} columns.}
 }
+\value{
+A tibble with fixed form.
+}
 \description{
-Tidy raw indicator
+The indicator downloaded from Eurostat is brought to a tidy format.
 }
 \keyword{internal}
