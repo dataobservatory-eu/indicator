@@ -14,5 +14,26 @@ value, frequency, estimate and method columns.}
 A tibble updated with the values carried back.
 }
 \description{
-Next observation carry back
+Fill missing values in a time series (or in a column of a longitudional data set)
+with the next observation carry back method.
 }
+\examples{
+{
+example_df <- data.frame (
+   time = rep(as.Date (paste0(2018:2021, "-01-01")),3),
+   geo = c( rep("NL", 4), rep("BE", 4), rep("LU", 4)),
+   value = c(10,11, NA_real_, 12, NA_real_, 21,22,23, 5,6,7,NA_real_),
+   frequency = rep("A", 12)
+)
+example_df$method <- ifelse(is.na(example_df$value), "missing", "actual")
+example_df$estimate <- example_df$method
+
+na_nocb ( example_df )
+}
+}
+\seealso{
+Other approximation functions: 
+\code{\link{na_approx}()},
+\code{\link{na_locf}()}
+}
+\concept{approximation functions}

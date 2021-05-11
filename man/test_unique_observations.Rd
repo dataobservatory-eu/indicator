@@ -13,5 +13,9 @@ test_unique_observations(indicator)
 \code{TRUE} if the test is met, otherwise and error message.
 }
 \description{
-Approximation and other filling techniques require unique observations
+Tidy indicators have observations that are unique. They must have on of the three
+types of values: an actual, an estimated or a missing value.
+}
+\details{
+Approximation and other filling techniques require unique observations.
 }

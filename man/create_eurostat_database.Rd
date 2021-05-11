@@ -28,3 +28,4 @@ create_eurostat_database (
 )
 }
 }
+\concept{database functions}

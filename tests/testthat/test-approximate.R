@@ -5,6 +5,9 @@ benelux_linear <- data.frame (
   LU = seq ( 2, 22, by = 2)
   )
 
+
+
+
 benelux_linear$NL[c(6, 10:11)] <- NA_real_
 benelux_linear$BE[c(1:3, 10)] <- NA_real_
 benelux_linear$LU[c(4:6)] <- NA_real_

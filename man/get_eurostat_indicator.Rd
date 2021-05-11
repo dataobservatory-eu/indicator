@@ -19,3 +19,4 @@ description table and a metadata table.
 Get a Eurostat data product and save its metadata and the data in
 tidy tables.
 }
+\concept{acquisition functions}

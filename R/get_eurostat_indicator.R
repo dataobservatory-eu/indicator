@@ -15,6 +15,7 @@
 #' @importFrom assertthat assert_that
 #' @importFrom tidyr unite pivot_wider pivot_longer
 #' @importFrom snakecase to_sentence_case
+#' @family acquisition functions
 #' @return A list that contains three tables: the indicator, a value label
 #' description table and a metadata table.
 #' @export

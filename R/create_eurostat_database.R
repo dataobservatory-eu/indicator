@@ -8,6 +8,7 @@
 #' @importFrom DBI dbWriteTable dbAppendTable dbDisconnect
 #' @importFrom RSQLite SQLite sqliteCopyDatabase
 #' @return An Sqlite database with three tables: indicator, metadata and labelling.
+#' @family database functions
 #' @examples
 #' \dontrun{
 #' tmp_dir <- tempdir()

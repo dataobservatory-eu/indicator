@@ -1,6 +1,10 @@
 #' Test Unique Observations
 #'
-#' Approximation and other filling techniques require unique observations
+#' Tidy indicators have observations that are unique. They must have on of the three
+#' types of values: an actual, an estimated or a missing value.
+#'
+#' Approximation and other filling techniques require unique observations.
+#'
 #' @param indicator An indicator table to test.
 #' @importFrom dplyr select group_by add_count filter
 #' @importFrom assertthat assert_that
@@ -11,7 +15,7 @@ test_unique_observations <- function( indicator ) {
 
   uniqueness <- indicator %>%
     dplyr::select ( all_of(c("geo", "time", "value", "estimate")) ) %>%
-    dplyr::group_by (  .data$geo, .data$time, .data$value ) %>%
+    dplyr::group_by ( .data$geo, .data$time, .data$value ) %>%
     add_count() %>%
     filter ( n != 1 )
 
@@ -23,6 +27,7 @@ test_unique_observations <- function( indicator ) {
 #' Create Time Series Object
 #'
 #' Create a time series object from tmp in approximation functions.
+#'
 #' @param tmp A temporary indicator table created by an approximation function.
 #' @importFrom timetk tk_ts
 #' @importFrom dplyr case_when
@@ -51,14 +56,28 @@ create_time_series <- function( tmp ) {
 
 #' Linear approximation of missing values
 #'
-#'
+#' Fill missing values in a time series (or in a column of a longitudional data set)
+#' with the approximation method.
 #'
 #' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
 #' value, frequency, estimate and method columns.
 #' @importFrom tidyr pivot_wider pivot_longer
 #' @importFrom dplyr select filter left_join mutate bind_cols
 #' @importFrom zoo na.approx
+#' @family approximation functions
 #' @return A tibble updated with with approximated values.
+#' @examples{
+#' example_df <- data.frame (
+#'    time = rep(as.Date (paste0(2018:2021, "-01-01")),3),
+#'    geo = c( rep("NL", 4), rep("BE", 4), rep("LU", 4)),
+#'    value = c(10,11, NA_real_, 12, NA_real_, 21,22,23, 5,6,7,NA_real_),
+#'    frequency = rep("A", 12)
+#' )
+#' example_df$method <- ifelse(is.na(example_df$value), "missing", "actual")
+#' example_df$estimate <- example_df$method
+#'
+#' na_approx ( example_df )
+#' }
 #' @export
 
 na_approx <- function (indicator) {
@@ -104,12 +123,28 @@ na_approx <- function (indicator) {
 
 #' Last observation carry forward
 #'
+#' Fill missing values in a time series (or in a column of a longitudional data set)
+#' with the last observation carry forward method.
+#'
 #' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
 #' value, frequency, estimate and method columns.
 #' @importFrom tidyr pivot_wider pivot_longer
 #' @importFrom dplyr select filter left_join mutate bind_cols
 #' @importFrom zoo na.locf
+#' @family approximation functions
 #' @return A tibble updated with the forward carried values.
+#' @examples{
+#' example_df <- data.frame (
+#'    time = rep(as.Date (paste0(2018:2021, "-01-01")),3),
+#'    geo = c( rep("NL", 4), rep("BE", 4), rep("LU", 4)),
+#'    value = c(10,11, NA_real_, 12, NA_real_, 21,22,23, 5,6,7,NA_real_),
+#'    frequency = rep("A", 12)
+#' )
+#' example_df$method <- ifelse(is.na(example_df$value), "missing", "actual")
+#' example_df$estimate <- example_df$method
+#'
+#' na_locf ( example_df )
+#' }
 #' @export
 #'
 
@@ -154,12 +189,28 @@ na_locf <- function (indicator) {
 
 #' Next observation carry back
 #'
+#' Fill missing values in a time series (or in a column of a longitudional data set)
+#' with the next observation carry back method.
+#'
 #' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
 #' value, frequency, estimate and method columns.
 #' @importFrom tidyr pivot_wider pivot_longer
 #' @importFrom dplyr select filter left_join mutate bind_cols
 #' @importFrom zoo na.locf
+#' @family approximation functions
 #' @return A tibble updated with the values carried back.
+#' @examples {
+#' example_df <- data.frame (
+#'    time = rep(as.Date (paste0(2018:2021, "-01-01")),3),
+#'    geo = c( rep("NL", 4), rep("BE", 4), rep("LU", 4)),
+#'    value = c(10,11, NA_real_, 12, NA_real_, 21,22,23, 5,6,7,NA_real_),
+#'    frequency = rep("A", 12)
+#' )
+#' example_df$method <- ifelse(is.na(example_df$value), "missing", "actual")
+#' example_df$estimate <- example_df$method
+#'
+#' na_nocb ( example_df )
+#' }
 #' @export
 
 
