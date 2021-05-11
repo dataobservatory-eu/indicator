@@ -10,7 +10,7 @@ test_unique_observations(indicator)
 \item{indicator}{An indicator table to test.}
 }
 \value{
-\code{NULL} if the test is met, otherwise and error message.
+\code{TRUE} if the test is met, otherwise and error message.
 }
 \description{
 Approximation and other filling techniques require unique observations

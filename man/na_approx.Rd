@@ -7,7 +7,8 @@
 na_approx(indicator)
 }
 \arguments{
-\item{indicator}{a character string with the indicator name}
+\item{indicator}{A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
+value, frequency, estimate and method columns.}
 }
 \value{
 A tibble updated with with approximated values.

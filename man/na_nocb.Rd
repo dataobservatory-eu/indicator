@@ -7,7 +7,8 @@
 na_nocb(indicator)
 }
 \arguments{
-\item{indicator}{A tibble created by \code{\link{get_eurostat_indicator}}.}
+\item{indicator}{A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
+value, frequency, estimate and method columns.}
 }
 \value{
 A tibble updated with the values carried back.

@@ -4,10 +4,15 @@
 \alias{indicator_forecast}
 \title{Forecast the indicator value}
 \usage{
-indicator_forecast(indicator)
+indicator_forecast(indicator, forecast_periods = NULL)
 }
 \arguments{
-\item{indicator}{A tibble created by \code{\link{get_eurostat_indicator}}.}
+\item{indicator}{A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
+value, frequency, estimate and method columns.}
+
+\item{forecast_periods}{The number of expected forecasts.  If set to default \code{NULL},
+annual indicators will be forecasted to 3 periods, quarterly to 5 periods,
+monthly to 12 periods and daily to 30 periods.}
 }
 \value{
 A tibble updated with with forecasted values.
