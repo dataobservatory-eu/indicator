@@ -17,42 +17,12 @@ test_unique_observations <- function( indicator ) {
     dplyr::select ( all_of(c("geo", "time", "value", "estimate")) ) %>%
     dplyr::group_by ( .data$geo, .data$time, .data$value ) %>%
     add_count() %>%
-    filter ( n != 1 )
+    filter ( .data$n != 1 )
 
   assertthat::assert_that(nrow(uniqueness)==0,
                           msg= "test_unique_observations() found non-unique values.")
 
 }
-
-#' Create Time Series Object
-#'
-#' Create a time series object from tmp in approximation functions.
-#'
-#' @param tmp A temporary indicator table created by an approximation function.
-#' @importFrom timetk tk_ts
-#' @importFrom dplyr case_when
-#' @importFrom lubridate ymd
-#' @importFrom glue glue
-#' @return \code{TRUE} if the test is met, otherwise and error message.
-#' @keywords internal
-
-create_time_series <- function( tmp ) {
-
-  freq <- unique(tmp$frequency)
-
-  assertthat::assert_that(length(freq)==1,
-                          msg =  glue::glue( "There are several frequency types found: {freq}. This is an error.") )
-
-  start_value <- lubridate::ymd(min(tmp$time))
-
-  timetk::tk_ts(tmp ,
-                start = start_value,
-                frequency =   case_when ( freq == "A" ~ 1,
-                                          freq == "Q" ~ 4,
-                                          freq == "M" ~ 12),
-                silent = TRUE)
-}
-
 
 #' Linear approximation of missing values
 #'
@@ -107,14 +77,10 @@ na_approx <- function (indicator) {
                    ),
                 by = c("time", "frequency", "geo")
                )   %>%
-    mutate ( method  = ifelse(!is.na(value)& method=="missing",
-                              "approx", method))  %>%
-    mutate ( estimate  = ifelse(!is.na(value)& estimate=="missing",
-                              "approx", estimate))
-
-  nrow ( long_form_approx ) == nrow( indicator )
-
-  test_unique_observations(long_form_approx )
+    mutate ( method  = ifelse(!is.na(.data$value) & .data$method=="missing",
+                              "approx", .data$method),
+             estimate  = ifelse(!is.na(.data$value) & .data$estimate=="missing",
+                                "approx", .data$estimate))
 
   long_form_approx
 
@@ -174,14 +140,10 @@ na_locf <- function (indicator) {
                   ),
                 by = c("time", "frequency", "geo")
     )   %>%
-    mutate ( method  = ifelse(!is.na(value)& method=="missing",
-                              "locf", method))  %>%
-    mutate ( estimate  = ifelse(!is.na(value)& estimate=="missing",
-                                "locf", estimate))
-
-  nrow ( long_form_locf ) == nrow( indicator )
-
-  test_unique_observations(long_form_locf )
+    mutate ( method  = ifelse(!is.na(.data$value) & .data$method=="missing",
+                              "locf", .data$method),
+             estimate  = ifelse(!is.na(.data$value) & .data$estimate=="missing",
+                                "locf", .data$estimate))
 
   long_form_locf
 
@@ -240,45 +202,98 @@ na_nocb <- function (indicator) {
                   ),
                 by = c("time", "frequency", "geo")
     )   %>%
-    mutate ( method  = ifelse(!is.na(value)& method=="missing",
-                              "nocb", method))  %>%
-    mutate ( estimate  = ifelse(!is.na(value)& estimate=="missing",
-                                "nocb", estimate))
-
-  nrow ( long_form_nocb ) == nrow( indicator )
-
-  test_unique_observations(long_form_nocb )
+    mutate ( method  = ifelse(!is.na(.data$value) & .data$method=="missing",
+                              "nocb", .data$method),
+             estimate  = ifelse(!is.na(.data$value)& .data$estimate=="missing",
+                                "nocb", .data$estimate))
 
   long_form_nocb
 }
 
-#' Format returned data table
-#' @param  One of \code{nocb}, \code{locf}, \code{forecast}, \code{backcast}
+#' Create Time Series Object
+#'
+#' Create a time series object from tmp in approximation functions.
+#'
+#' @param tmp A temporary indicator table created by an approximation function.
+#' @importFrom timetk tk_ts
+#' @importFrom dplyr case_when
+#' @importFrom lubridate ymd as_date
+#' @importFrom glue glue
+#' @return \code{TRUE} if the test is met, otherwise and error message.
 #' @keywords internal
 
-format_return_value <- function( long_form_approx,
-                                 type_approx = "locf") {
+create_time_series <- function( tmp ) {
+  freq <- unique(tmp$frequency)
 
+  assertthat::assert_that(length(freq)==1,
+                          msg =  glue::glue( "There are several frequency types found: {freq}. This is an error.") )
 
-  message ( "This function is no longer needed.")
-  return(NULL)
-  tmp  <- long_form_approx %>%
-    mutate ( estimate = NA_character_) %>%
-    mutate ( method = ifelse(is.na(.data$value), "missing", .data$method)) %>%
-    mutate ( estimate = if_else(is.na(.data$value)&!is.na(.data$approx),
-                                type_approx ,
-                                .data$estimate)) %>%
-    mutate ( value = if_else ( estimate == type_approx,
-                               .data$approx,
-                               .data$value ))   %>%
-    tidy_indicator()   %>%
-    select ( -all_of(c("approx")) ) %>%
-    select ( any_of(c("geo", "time", "value", "year", "month", "day",
-                      "frequency", "estimate", "method")))
+  start_value <- lubridate::ymd(min(tmp$time))
 
-  tmp
+  timetk::tk_ts(tmp ,
+                start = start_value,
+                frequency =   case_when ( freq == "A" ~ 1,
+                                          freq == "Q" ~ 4,
+                                          freq == "M" ~ 12),
+                silent = TRUE)
 }
 
+#' Add New Periods
+#'
+#' Create a time series object from tmp in approximation functions.
+#'
+#' @param indic A temporary indicator table created by an approximation function.
+#' @param years The number of years to add to the indicator's data frame.  Positive values add after the last
+#' observed time, negative values add before the first observed time.
+#' @param days The number of years to add to the indicator's data frame.  Positive values add after the last
+#' observed time, negative values add before the first observed time.
+#' @importFrom dplyr mutate
+#' @importFrom purrr set_names
+#' @importFrom lubridate ymd as_date days years
+#' @return A new data frame with the new observation times added with missing values, labelled as
+#' \code{estimate='missing'} and \code{method='missing'}.
+#' @keywords internal
+
+add_new_periods <- function (  indic, years = NULL, days = NULL ) {
+
+  #lubridate has no months?
+  observation_time <- lubridate::as_date(indic$time)
+  last_time <- max(observation_time)
+  first_time  <- min(observation_time)
+  freq <- unique(indic$frequency)
+
+  if ( !is.null(years) ) {
+    years <- round(years, 0)
+
+    if (years>0) {
+      new_periods <- last_time + lubridate::years(1:years)
+    } else if (years<0) {
+      new_periods <- first_time - lubridate::years(1:-years)
+    }
+
+    indic <- indic %>%
+      dplyr::full_join (
+        expand.grid(new_periods, unique(indic$geo)) %>%
+          set_names (c("time", "geo")) %>%
+          mutate ( frequency = freq,
+                   method = 'missing',
+                   estimate = 'missing'),
+        by = c("time", "geo", "estimate", "frequency", "method")
+        )
+  }
+
+  if ( !is.null(days) ) {
+    days <- round(days, 0)
+    if (days>0) {
+      new_periods <- last_time + lubridate::days(1:days)
+    } else if (days<0) {
+      new_periods <- first_time - lubridate::days(1:-days)
+    }
+  }
+
+  new_periods
+
+}
 
 #' Forecast the indicator value
 #'
@@ -290,11 +305,12 @@ format_return_value <- function( long_form_approx,
 #' @importFrom timetk tk_ts tk_tbl
 #' @importFrom lubridate year
 #' @importFrom tidyr pivot_wider
-#' @importFrom dplyr select filter left_join mutate case_when
-#' @importFrom sweep sw_sweep
+#' @importFrom purrr possibly
+#' @importFrom dplyr select filter left_join mutate case_when full_join bind_cols anti_join
 #' @importFrom stringr str_sub
 #' @importFrom forecast forecast
 #' @importFrom tidyselect all_of
+#' @importFrom assertthat assert_that
 #' @return A tibble updated with with forecasted values.
 #' @export
 
@@ -303,15 +319,7 @@ indicator_forecast <- function (indicator, forecast_periods = NULL) {
 
   test_unique_observations(indicator)
 
-  message ("this should be rewritten")
-  return(NULL)
-
-  tmp <- indicator %>%
-    select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
-    pivot_wider( names_from = "geo",
-                 values_from = "value")
-
-  indicator_ts <- create_time_series(tmp)
+  freq <- unique(indicator$frequency)
 
   if (is.null(forecast_periods)) {
     forecast_periods <- case_when (
@@ -322,61 +330,68 @@ indicator_forecast <- function (indicator, forecast_periods = NULL) {
       TRUE ~ 5)
   }
 
-  indicator$time
+  assertthat::assert_that(is.numeric(forecast_periods),
+                          msg = "forecast_periods must be an (integer) number.")
 
-  forecasted <- forecast::forecast(indicator_ts, h = forecast_periods )
-
-  fcast_tbl <- sweep::sw_sweep(forecasted$forecast, timetk_idx = TRUE)
-  methods <- sweep::sw_sweep(forecasted$method, timetk_idx = TRUE)
-
-  forecasted_values <-   matrix (
-    rep(NA_real_, length(fcast_tbl)*forecast_periods),
-    nrow = forecast_periods ) %>%
-    as.data.frame() %>%
-    purrr::set_names ( names(fcast_tbl) )
-
-  sapply ( 1:3, function(x) fcast_tbl[[x]]$x )
-
-  as.zoo(fcast_tbl[[1]]$x)
-
-
-  ff <- timetk::tk_tbl(fcast_tbl, silent=TRUE)
-
-  forecasted$forecast
-
-  as.Date(as.integer(ff$Time))
-
-  forecast_df <- ff  %>%
-    set_names ( snakecase::to_snake_case(names(.))) %>%
-    select ( all_of (c("time", "series", "point_forecast"))) %>%
-    rename ( geo = .data$series ) %>%
-    mutate ( time = as.Date(time))
-    left_join ( data.frame (
-      geo = names(methods),
-      forecast_method = as.character(methods)
-    ),
-    by = 'geo' )
-
-  if (unique(indicator$frequency)=="A") {
-
-    forecast_df <- forecast_df %>%
-      mutate ( md = str_sub(as.character(indicator$time), 5,-1)[1]) %>%
-      mutate ( time = as.Date ( paste0(as.character(time), md))) %>%
-      select ( -all_of("md"))
+  if (!is.null(forecast_periods)) {
+    if ( freq == "A" ) {
+      new_periods_df <- data.frame (
+        time  = add_new_periods(indic = indicator,years = forecast_periods),
+        frequency = freq)
+    } else  if ( freq == "D" ) {
+      new_periods_df <- data.frame (
+        add_new_periods(indic = indicator,days = forecast_periods),
+        frequency = freq)
+    } else {
+      stop ( "Forecasting for quarterly or monthly periods is not yet implemented.")
+    }
   }
 
+  assertthat::assert_that(inherits(new_periods_df, "data.frame"),
+                          msg = 'new_periods_df was not created.')
+
+  tmp <- indicator %>%
+    select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
+    pivot_wider( names_from = "geo",
+                 values_from = "value")
+
+  indicator_ts <- create_time_series(tmp)
+
+  ## We cannot be sure that a time series can be forecasted.  In longitudional panel data
+  ## some columns may yield a forecasts, others may not.
+
+  possibly_forecast <- purrr::possibly(.f = forecast::forecast, NULL)
+
+  forecast_per_geo <- apply (indicator_ts, 2, function(x) possibly_forecast(x, h = forecast_periods ))
+
+  forecast_methods_geo <- lapply (forecast_per_geo, function(x) as.character(x$method))
+  forecast_values_geo <- lapply (forecast_per_geo, function(x) as.numeric(x$mean))
+
+  forecast_values_df <- as.data.frame(forecast_values_geo) %>%
+    bind_cols ( new_periods_df ) %>%
+    pivot_longer ( cols = -all_of(c("time", "frequency")),
+                   names_to = "geo")
+
+  forecast_methods_df <-  as.data.frame ( forecast_methods_geo  ) %>%
+    pivot_longer ( everything(),
+                   names_to = "geo",
+                   values_to = "method")
 
 
+  new_forecasted_values <- forecast_values_df %>%
+    mutate ( estimate = 'forecast') %>%
+    left_join (
+      forecast_methods_df,
+      by = "geo")   %>%
+    mutate ( method   = ifelse ( is.na(.data$value), "missing", .data$method),
+             estimate = ifelse ( is.na(.data$value), "missing", .data$estimate))
 
-   indicator_with_method  <- indicator %>%
-    full_join ( anti_join (forecast_df, indicator ) ) %>%
-    mutate ( method = if_else(is.na(value) & !is.na(point_forecast),
-                                true = paste0("forecast_", forecast_method),
-                                false = estimate  )) %>%
-    rename ( approx = .data$point_forecast ) %>%
-    select (-any_of("forecast_method"))
-
-    format_return_value( long_form_approx = indicator_with_method,
-                         type_approx = "forecast")
+  indicator %>%
+    dplyr::full_join (
+      dplyr::anti_join (new_forecasted_values, indicator,
+                        by = c("time", "frequency", "geo", "value", "estimate", "method")
+                        ),
+      by = c("time", "geo", "value", "estimate", "frequency", "method")
+      )
 }
 

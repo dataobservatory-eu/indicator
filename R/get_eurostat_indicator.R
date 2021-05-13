@@ -23,6 +23,7 @@
 get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
 
   . <- description_indicator <- indic_dict <- NULL
+  db_source_code <- NULL # this should be eliminated with .data$db_source_code
 
   id <- tolower(id)
 
@@ -182,7 +183,7 @@ get_eurostat_indicator <- function ( id, eurostat_toc = NULL ) {
                    remove = TRUE) %>%
     mutate ( db_source_code = glue::glue ( "eurostat_{id}" ) ) %>%
     mutate ( db_source_code = tolower( as.character(.data$db_source_code)) ) %>%
-    mutate ( indicator_code = tolower(paste0(db_source_code, "_", indicator_code)))
+    mutate ( indicator_code = tolower(paste0(db_source_code, "_", .data$indicator_code)))
 
   ## The metadata is based on the Eurostat metadata information, but
   ## includes frequency and the date of the data download ---------------------

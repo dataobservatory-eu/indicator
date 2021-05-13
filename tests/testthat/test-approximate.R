@@ -1,11 +1,10 @@
+
 benelux_linear <- data.frame (
   time = as.Date (paste0(2010:2020, "-01-01")),
   NL = seq ( 30, 50, by = 2),
   BE = seq ( 35, 45, by = 1),
   LU = seq ( 2, 22, by = 2)
   )
-
-
 
 
 benelux_linear$NL[c(6, 10:11)] <- NA_real_
@@ -94,3 +93,20 @@ test_that("nocb works", {
     c(rep("nocb",3), rep("actual", 6), c("approx", "actual"))
   )
 })
+
+forecasted_3 <- indicator_forecast(
+  indicator = nocb_benelux_values,
+  forecast_periods = 3)
+
+forecasted_be <- forecasted_3[forecasted_3$geo == "BE", ]
+
+
+test_that("forecaseting works", {
+  expect_equal(max(forecasted_3$time),as.Date ( "2023-01-01" ))
+  expect_true(unlist(forecasted_be [ forecasted_be$time == as.Date ("2021-01-01"), "method"]) == "ETS(A,A,N)")
+  expect_equal(as.numeric(unlist(forecasted_be [ forecasted_be$time == as.Date ("2021-01-01"), "value"])), 46)
+  expect_equal(as.character(unlist(forecasted_be [ forecasted_be$time == as.Date ("2021-01-01"), "estimate"])), "forecast")
+})
+
+
+

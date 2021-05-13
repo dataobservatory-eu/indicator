@@ -11,6 +11,7 @@
 #' @keywords internal
 
 tidy_indicator <- function ( indic_raw, indicator_labels = NULL ) {
+  . <- NULL # how to get rid of names(.)
 
   if ( "values" %in% names (indic_raw) ) {
     indic_raw <- indic_raw %>%

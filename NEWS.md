@@ -6,3 +6,6 @@
 
 # indicators 0.0.0.9001
 * na.approx works with unit tests, and has working examples, except for forecasting. Forecasting, and potentially all approximation should be based in the future on [timetk](https://business-science.github.io/timetk/).
+
+# indicators 0.0.0.9002
+* indicator_forecast now works, but with dependency forecast.
