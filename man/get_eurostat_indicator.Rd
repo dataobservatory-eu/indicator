@@ -4,10 +4,15 @@
 \alias{get_eurostat_indicator}
 \title{Get Tidy Indicator(s) From Eurostat}
 \usage{
-get_eurostat_indicator(id, eurostat_toc = NULL)
+get_eurostat_indicator(preselected_indicators = NULL, id, eurostat_toc = NULL)
 }
 \arguments{
-\item{id}{The identifier code of a Eurostat data product.}
+\item{preselected_indicators}{A pre-filtered datatable from \code{\link[eurostat]{get_eurostat}}.
+Defaults to \code{NULL}, when the download will be called with \code{id}.}
+
+\item{id}{The identifier code of a Eurostat data product.
+\code{\link[eurostat]{get_eurostat}} will be called with \code{id} if
+\code{preselected_indicators=NULL}.}
 
 \item{eurostat_toc}{The Eurostat table of contents}
 }

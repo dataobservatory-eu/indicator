@@ -1,4 +1,3 @@
-
 benelux_linear <- data.frame (
   time = as.Date (paste0(2010:2020, "-01-01")),
   NL = seq ( 30, 50, by = 2),
@@ -18,11 +17,11 @@ benelux_linear_long <- tidyr::pivot_longer( benelux_linear,
   mutate ( frequency = "A",
            method = estimate )
 
-indicator <- benelux_linear_long
-
 test_that("unique indicator value tests", {
   expect_true(test_unique_observations (benelux_linear_long))
-  expect_error(test_unique_observations (rbind ( benelux_linear_long, benelux_linear_long )))
+  expect_error(test_unique_observations (
+    indicator = rbind (benelux_linear_long, benelux_linear_long)
+    ))
 })
 
 approximated_benelux_values <- na_approx (benelux_linear_long)
@@ -99,7 +98,6 @@ forecasted_3 <- indicator_forecast(
   forecast_periods = 3)
 
 forecasted_be <- forecasted_3[forecasted_3$geo == "BE", ]
-
 
 test_that("forecaseting works", {
   expect_equal(max(forecasted_3$time),as.Date ( "2023-01-01" ))

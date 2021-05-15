@@ -9,9 +9,9 @@
 #' @importFrom tidyselect any_of
 #' @return A tibble with fixed form.
 #' @keywords internal
+#'
 
 tidy_indicator <- function ( indic_raw, indicator_labels = NULL ) {
-  . <- NULL # how to get rid of names(.)
 
   if ( "values" %in% names (indic_raw) ) {
     indic_raw <- indic_raw %>%
@@ -26,7 +26,11 @@ tidy_indicator <- function ( indic_raw, indicator_labels = NULL ) {
     indic_raw$method <- NA_character_
   }
 
-  indic_raw %>%
+  if ( ! "unit" %in% names(indic_raw) ) {
+    indic_raw$unit <- NA_character_
+  }
+
+  tmp <- indic_raw %>%
     mutate ( year  = as.integer(lubridate::year(.data$time)),
              month = as.integer(lubridate::month(.data$time)),
              day   = as.integer(lubridate::day(.data$time))
@@ -38,13 +42,7 @@ tidy_indicator <- function ( indic_raw, indicator_labels = NULL ) {
       length( unique(.data$day )   ) >= 28 ~ "D", # if there are at least 28 DAYS, daily
       length( unique(.data$month)  ) == 12 ~ "M", # if there are at least 12 month, monthly
       TRUE ~"unknown"
-    )) %>%
-    mutate ( unit = ifelse (
-      # if_else cannot be used here as length(condition) != length(true)
-      test = "unit" %in% names(.),
-      yes  = .data$unit,
-      no   = NA_character_ )
-    ) %>%
+    ))  %>%
     mutate ( estimate = if_else (
       condition = is.na(.data$value),
       true = "missing",
@@ -58,4 +56,6 @@ tidy_indicator <- function ( indic_raw, indicator_labels = NULL ) {
     relocate ( any_of ("unit"), .before = "geo") %>%
     relocate ( # we want to have indicator identification elements first
       any_of ( tolower(indicator_labels$code_name) ))
+
+  tmp
 }

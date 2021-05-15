@@ -6,12 +6,17 @@
 #' Approximation and other filling techniques require unique observations.
 #'
 #' @param indicator An indicator table to test.
-#' @importFrom dplyr select group_by add_count filter
+#' @importFrom dplyr select group_by add_count filter distinct_all
 #' @importFrom assertthat assert_that
 #' @return \code{TRUE} if the test is met, otherwise and error message.
 #' @export
 
 test_unique_observations <- function( indicator ) {
+
+  assertthat::assert_that(
+    all ( c("geo", "time", "value", "estimate") %in% names(indicator)),
+    msg = "The indicator must have geo, time, value, estimate variable columns."
+  )
 
   uniqueness <- indicator %>%
     dplyr::select ( all_of(c("geo", "time", "value", "estimate")) ) %>%
@@ -32,7 +37,7 @@ test_unique_observations <- function( indicator ) {
 #' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
 #' value, frequency, estimate and method columns.
 #' @importFrom tidyr pivot_wider pivot_longer
-#' @importFrom dplyr select filter left_join mutate bind_cols
+#' @importFrom dplyr select filter left_join mutate bind_cols arrange
 #' @importFrom zoo na.approx
 #' @family approximation functions
 #' @return A tibble updated with with approximated values.
@@ -55,7 +60,8 @@ na_approx <- function (indicator) {
   test_unique_observations(indicator)
 
   tmp <- indicator %>%
-    select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
+    select ( all_of(c("time", "geo", "value", "frequency"))) %>%
+    dplyr::arrange (.data$time) %>%
     pivot_wider( names_from = "geo",
                  values_from = "value")
 
@@ -63,11 +69,14 @@ na_approx <- function (indicator) {
 
   approximated <- zoo::na.approx(indicator_ts)
 
-  long_form_approx <- as.data.frame (approximated) %>% # assinged for easier debugging
+  approx_df <- as.data.frame (approximated) %>% # assigned for easier debugging
     bind_cols( tmp  %>%
                  select (
                    all_of(c("time", "frequency")))
-    )   %>%
+    )
+
+
+  long_form_approx <- approx_df  %>%
     pivot_longer( cols = -all_of(c("time", "frequency")),
                   names_to = 'geo',
                   values_to = 'value') %>%
@@ -76,7 +85,7 @@ na_approx <- function (indicator) {
                    all_of(c("time", "geo", "estimate", "method", "frequency"))
                    ),
                 by = c("time", "frequency", "geo")
-               )   %>%
+               ) %>%
     mutate ( method  = ifelse(!is.na(.data$value) & .data$method=="missing",
                               "approx", .data$method),
              estimate  = ifelse(!is.na(.data$value) & .data$estimate=="missing",
@@ -95,7 +104,7 @@ na_approx <- function (indicator) {
 #' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
 #' value, frequency, estimate and method columns.
 #' @importFrom tidyr pivot_wider pivot_longer
-#' @importFrom dplyr select filter left_join mutate bind_cols
+#' @importFrom dplyr select filter left_join mutate bind_cols arrange
 #' @importFrom zoo na.locf
 #' @family approximation functions
 #' @return A tibble updated with the forward carried values.
@@ -120,6 +129,7 @@ na_locf <- function (indicator) {
 
   tmp <- indicator %>%
     select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
+    dplyr::arrange (.data$time) %>%
     pivot_wider( names_from = "geo",
                  values_from = "value")
 
@@ -157,7 +167,7 @@ na_locf <- function (indicator) {
 #' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
 #' value, frequency, estimate and method columns.
 #' @importFrom tidyr pivot_wider pivot_longer
-#' @importFrom dplyr select filter left_join mutate bind_cols
+#' @importFrom dplyr select filter left_join mutate bind_cols arrange
 #' @importFrom zoo na.locf
 #' @family approximation functions
 #' @return A tibble updated with the values carried back.
@@ -182,6 +192,7 @@ na_nocb <- function (indicator) {
 
   tmp <- indicator %>%
     select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
+    dplyr::arrange (.data$time) %>%
     pivot_wider( names_from = "geo",
                  values_from = "value")
 
@@ -307,6 +318,7 @@ add_new_periods <- function (  indic, years = NULL, days = NULL ) {
 #' @importFrom tidyr pivot_wider
 #' @importFrom purrr possibly
 #' @importFrom dplyr select filter left_join mutate case_when full_join bind_cols anti_join
+#' @importFrom dplyr arrange
 #' @importFrom stringr str_sub
 #' @importFrom forecast forecast
 #' @importFrom tidyselect all_of
@@ -352,6 +364,7 @@ indicator_forecast <- function (indicator, forecast_periods = NULL) {
 
   tmp <- indicator %>%
     select ( all_of(c("time", "geo", "value", "frequency" ))) %>%
+    dplyr::arrange (.data$time) %>%
     pivot_wider( names_from = "geo",
                  values_from = "value")
 

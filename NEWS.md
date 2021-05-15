@@ -9,3 +9,6 @@
 
 # indicators 0.0.0.9002
 * indicator_forecast now works, but with dependency forecast.
+
+# indicators 0.0.0.9003
+* tidy_indicator and get_eurostat_indicator is tested against a wide range of real-life data, and it is now passing a number of unit tests. 
