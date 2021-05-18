@@ -3,9 +3,12 @@
 #' Get a Eurostat data product and save its metadata and the data in
 #' tidy tables.
 #'
+#' This function creates a tidy indicator table that is ready to be inserted into a database.
+#'
 #' @param id The identifier code of a Eurostat data product.
 #' \code{\link[eurostat]{get_eurostat}} will be called with \code{id} if
-#' \code{preselected_indicators=NULL}.
+#' \code{preselected_indicators=NULL}. In case the data is preselected, the \code{id} serves for
+#' labeling from the Eurostat label dictionaries.
 #' @param preselected_indicators A pre-filtered datatable from \code{\link[eurostat]{get_eurostat}}.
 #' Defaults to \code{NULL}, when the download will be called with \code{id}.
 #' @param eurostat_toc The Eurostat table of contents
@@ -75,7 +78,7 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
   indic_downloaded <- indic_downloaded %>%
     mutate ( indicator_code = glue::glue ("eurostat_{id}"),
              db_source_code = .data$indicator_code,
-             description_indicator = eurostat_toc$title[eurostat_toc$code == id] )
+             description_indicator = eurostat_toc$title[eurostat_toc$code == id][1] ) # is this make sense? Why do we have multiples?
 
 
   ## The value labels do not have a strict ordering, except for the case when
