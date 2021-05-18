@@ -1,4 +1,4 @@
-#' Tidy raw indicator
+#' Tidy Raw Indicator
 #'
 #' The indicator downloaded from Eurostat is brought to a tidy format.
 #'

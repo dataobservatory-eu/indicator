@@ -2,7 +2,7 @@
 % Please edit documentation in R/tidy_indicator.R
 \name{tidy_indicator}
 \alias{tidy_indicator}
-\title{Tidy raw indicator}
+\title{Tidy Raw Indicator}
 \usage{
 tidy_indicator(indic_raw, indicator_labels = NULL)
 }

@@ -31,62 +31,6 @@ devtools::install_github("dataobservatory-eu/indicator")
 ```
 ## Create a mini database
 
-This code will create a  mini database from select Eurostat indicators:
-
-```{r create-database}
-library(indicators)
-require(DBI)
-require(dplyr)
-# Make sure that it will work in a vignette, too:
-data_raw_dir <- ifelse (dir.exists('data-raw'), 'data-raw', file.path('..', 'data-raw'))
-
-create_eurostat_database (
-  ids = c("ISOC_R_BLT12_I", "isoc_cicce_use", "teicp090", "tin00028"),
-  db_path = file.path(data_raw_dir, "test_db.db")
-)
-```
-```{r get-table-names}
-disc_con <- dbConnect(RSQLite::SQLite(), file.path(data_raw_dir, "test_db.db") )
-
-message  ("The following tables are present in the database: ")
-DBI::dbListTables(disc_con)
-```
-
-```{r get-metadata-table }
-db_metadata <- DBI::dbReadTable(disc_con, "metadata")
-
-internet_use_indicators <- db_metadata %>% 
-  select ( all_of(c("indicator_code", "description_indicator", "actual", "missing"))) %>%
-  filter ( grepl("internet use", tolower(.data$description_indicator)) ) %>%
-  relocate ( .data$indicator_code, .after = .data$missing )
-
-```
-
-And now select the indicators:
-
-```{r get-select-indicators}
-test_indicators <- DBI::dbGetQuery(
-  conn = disc_con, 
-  "SELECT indicator_code, value, geo, time, estimate FROM indicator 
-   WHERE indicator_code = ?", 
-  params = list(internet_use_indicators$indicator_code)
-)
-
-head(test_indicators,12)
-```
-Another simple query:
-
-```{r get-count}
-DBI::dbGetQuery(conn = disc_con, 
-                "SELECT COUNT(*) FROM indicator 
-                WHERE indicator_code = ?", 
-                params = list(internet_use_indicators$indicator_code)
-                )
-
-```
-```{r disconnect}
-DBI::dbDisconnect(disc_con)
-```
 
 See the vignettes:
 

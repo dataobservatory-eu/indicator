@@ -25,3 +25,8 @@ methods.
 The database functions assemble the metadata and data tables of various indicators into a SQlite database.
 }
 
+\section{metadata functions}{
+
+The metadata function update the metadata tables.
+}
+

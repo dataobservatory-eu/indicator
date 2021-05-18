@@ -12,7 +12,8 @@ Defaults to \code{NULL}, when the download will be called with \code{id}.}
 
 \item{id}{The identifier code of a Eurostat data product.
 \code{\link[eurostat]{get_eurostat}} will be called with \code{id} if
-\code{preselected_indicators=NULL}.}
+\code{preselected_indicators=NULL}. In case the data is preselected, the \code{id} serves for
+labeling from the Eurostat label dictionaries.}
 
 \item{eurostat_toc}{The Eurostat table of contents}
 }
@@ -23,5 +24,12 @@ description table and a metadata table.
 \description{
 Get a Eurostat data product and save its metadata and the data in
 tidy tables.
+}
+\details{
+This function creates a tidy indicator table that is ready to be inserted into a database.
+}
+\seealso{
+Other acquisition functions: 
+\code{\link{update_metadata}()}
 }
 \concept{acquisition functions}

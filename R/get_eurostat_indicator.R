@@ -15,7 +15,7 @@
 #' @importFrom lubridate day month year
 #' @importFrom dplyr mutate filter case_when relocate bind_cols group_by_all
 #' @importFrom dplyr distinct_all select if_else rename left_join add_count
-#' @importFrom dplyr anti_join
+#' @importFrom dplyr anti_join ungroup
 #' @importFrom eurostat get_eurostat label_eurostat
 #' @importFrom purrr set_names
 #' @importFrom tidyselect any_of all_of everything contains
@@ -75,6 +75,8 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
    indic_downloaded <- preselected_indicators
   }
 
+  eurostat_toc[eurostat_toc$code == id, ]
+
   indic_downloaded <- indic_downloaded %>%
     mutate ( indicator_code = glue::glue ("eurostat_{id}"),
              db_source_code = .data$indicator_code,
@@ -118,7 +120,7 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
     select (-any_of(c("time", "values"))) %>%
     distinct_all()
 
-  if ( ncol(value_codes)>0 ) {
+  if ( ncol(value_codes)>3 ) {
 
     value_labelling <- value_codes %>%
       select ( -any_of(c("indicator_code", "db_source_code", "description_indicator"))) %>%
@@ -148,7 +150,7 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
   common_ext_vars <- names(value_labels)[names(value_labels) %in% names(indicator)]
   table_specific_vars <- common_ext_vars[!common_ext_vars %in% c("indicator_code", "description_indicator", "db_source_code")]
 
-  if ( length(common_ext_vars)>3 ) {
+  if ( length(table_specific_vars )>0 ) {
     indicator_ext <- indicator %>%
       left_join ( value_labels, by = common_ext_vars ) %>%
       relocate ( -any_of(c("indicator_code", "db_source_code", "description_indicator")),
@@ -203,6 +205,7 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
     # in the dataframe. We make them explicit.
     indic_to_fill = indicator_ext_unit )
 
+  indicator_final <- dplyr::ungroup(indicator_final)
 
   ## Further metadata and assertions  -------------------------------------------
   indicator_frequency <- unique( indicator_final$frequency)
@@ -257,7 +260,8 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
                                 0)
     ) %>%
     left_join ( metadata,  by = c("db_source_code", "frequency")) %>%
-    distinct_all() # I wonder what duplicates (unit of measure?)
+    distinct_all() %>% # I wonder what duplicates (unit of measure?) %>%
+    ungroup()
 
   labelling <- unit_labels %>%
     mutate ( var_name = "unit") %>%

@@ -1,0 +1,182 @@
+---
+title: "Curated Indicators"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Curated Indicators}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r knitr-options, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+In this example, we will curate Eurostat indicators. All indicators are `national` indicators, we are not doing geographical recoding with regional indicators.
+
+
+```{r setup}
+library(indicators)
+require(eurostat)
+require(dplyr)
+```
+
+## Curation Process
+
+Eurostat publishes `data folders`. We select only the indicators that are direcly relevant to our observatory, in this case, the music observatory. 
+
+```{r curated-selections-from-folders}
+  #cloud computer use
+  isoc_cicci_use <- eurostat::get_eurostat(id = "isoc_cicci_use")
+  cloud_personal_raw <- eurostat::get_eurostat(id = "isoc_cicci_use") %>%
+    filter ( .data$ind_type %in% c("STUD", "Y16_24", "IND_TOTAL"),
+             .data$indic_is %in% c("I_CC", "I_CCS_CC", "I_CC_PAY"),
+             .data$unit %in% c("PC_IND"))
+  
+  # Frequency of practicing of artistic activities by sex, age and educational attainment level[ilc_scp07]
+  ilc_scp07 <- eurostat::get_eurostat(id = "ilc_scp07")
+  artistic_activity_raw <- ilc_scp07 %>%
+    filter ( .data$isced11 == "TOTAL",
+             .data$age %in% c("Y_GE16", "Y16-24"))
+  
+  # Final consumption expenditure of households by consumption purpose (COICOP 3 digit)[nama_10_co3_p3]
+  nama_10_co3_p3 <- eurostat::get_eurostat(id = "nama_10_co3_p3")
+
+  household_consumption_raw <- nama_10_co3_p3  %>%
+    filter (.data$unit == "PC_TOT",
+            .data$coicop %in% c("CP09", "CP091"))
+```
+The preselection is important, because the imputation code contains many inefficiencies, and many unit tests. It is resource-intensive.
+
+## Tidy Indicators
+
+The eurostat warehouse folder contains data in various formats. They are tidy (all observations are in rows, and all variables are in columns) but the columns vary product to product.  To place it into our observatory database, we create a canonical form of the indicator with `get_eurostat_indicator()`. 
+
+*A similar function must be written to all major open data sources.*
+
+The `id`, for example, `id = "isoc_cicci_use"` is used to identify the relevant Eurostat dictionary to describe and label the data. If the `preselected_indicators = NULL` then it will try to download the `id = "isoc_cicci_use"` product from Eurostat.  Because some Eurostat folders are very huge, it is unlikely that all functions will work on entire folders.  So some curation is necessary, which we did above.
+
+
+```{r tidy-indicators, message=FALSE, warning=FALSE}
+cloud_indicators <- get_eurostat_indicator(
+  preselected_indicators = cloud_personal_raw,
+  id = "isoc_cicci_use")
+
+artistic_activity_indicators <- get_eurostat_indicator ( artistic_activity_raw, id = "ilc_scp07")
+
+household_consumption_indicators  <- get_eurostat_indicator (  household_consumption_raw, id = "nama_10_co3_p3")
+
+```
+
+The function returns a list with three tables. 
+
+### Indicator values 
+
+```{r show-value-table}
+  artistic_activity_indicators$indicator %>% 
+  head() %>%
+  select ( .data$geo, .data$time, .data$value, .data$estimate, .data$description_indicator )
+```
+
+### Indicator labelling
+
+The following labels were found in the curated data (we do not reproduce the entire Eurostat dictionary, only the items that we actually use.)
+
+```{r show-labelling-example}
+  artistic_activity_indicators$labelling 
+```
+### Indicator metadata
+
+The metadata table contains many important information about the indicator.  Some of this data will be later used to identify which indicators need to be re-freshed from source, and re-processed.
+
+```{r indicator-metadata}
+  artistic_activity_indicators$metadata %>%
+  ungroup() %>%
+   filter (.data$indicator_code == unique(.data$indicator_code[1])) %>%
+   select ( all_of(c("indicator_code", "actual", "missing", "data_start", "last_update_data_source")))
+```
+
+## Imputation
+
+Currently we have some imputation functions that we apply on our example indicators.
+
+This is a very resource intensive step, may take long.
+
+1. Approximate missing values withing time series with `na_approx()`;
+2. Next observation carry forward for old missing values `na_nocb()`;
+3. Forecast the time series ahead `indicator_forecast()`;
+4. If the forecast did not work, try last observation carry forward `na_locf()`.
+
+The backcasting is not yet implemented.
+
+```{r bind-for-single-processing}
+# We will estimate the missing values with variuos imputation methods.
+indicators_to_impute <- cloud_indicators$indicator %>%
+    bind_rows ( artistic_activity_indicators$indicator ) %>%
+    bind_rows ( household_consumption_indicators$indicator)
+
+# We will updated the estimation columns after imputation.
+metadata_to_update <- cloud_indicators$metadata %>%
+    bind_rows ( artistic_activity_indicators$metadata )  %>%
+    bind_rows ( household_consumption_indicators$metadta)
+
+# We need the labels, too, but we won't do anything with them.
+labelling_bind <- cloud_indicators$labelling %>%
+    bind_rows ( artistic_activity_indicators$labelling )  %>%
+    bind_rows ( household_consumption_indicators$labelling )
+```
+
+And then carry out the imputation. In case you have many indicators, maybe it is safer to do them subgroup by subgroup. Later, when we will anyway re-process what is changed at the source, this may not be a problem.
+
+```{r do-the-imputation, warning=FALSE, message=FALSE}
+imp <- impute_indicators ( indic = indicators_to_impute )
+```
+
+### Update the metadata 
+
+This is not yet unit-tested, and does not seem to work properly. Basically we count the number of `approximated`, `next observation carry forward`, `forecasted`, and `last observation carry forward` estimates. 
+
+```{r update-metadata}
+updated_metadata <- update_metadata(imp, metadata = metadata_to_update )
+```
+
+They should show up here, but it suspicious that some are gone missing: 
+
+```{r show-updated-metadata}
+set.seed(2021)
+updated_metadata %>%
+  sample_n (12) %>%
+  select ( all_of ( c("indicator_code", "actual", "missing", "nocb", "locf", "approximate", "forecast")))
+```
+
+## Map to Observatory
+
+At last, we create keywords.  The keywords help us placing the indicators and their metadata in the long-form documentation. At least four keywords must be used. The first keyword, "music", identifies the music observatory, the "economy" the *Music economy pillar*, "Demand" is the first top-level division in the pillar, and "PCR"is the second.  Any further keywords, if they exist, are added as a concatenated list to the keyword table, divided by `__`.
+
+```{r create-keyword-table}
+keywords <- add_keywords (artistic_activity_indicators$metadata, list( "music", "economy", "supply", "potential_supply")) %>%
+  bind_rows ( add_keywords (cp_indicators$metadata, list( "music", "economy", "demand", "pcr")) ) %>%
+  bind_rows ( add_keywords (cp_indicators$metadata, list( "music", "economy", "demand", "general")) ) %>%
+  select ( all_of(c("indicator_code", "keyword_1", "keyword_2", "keyword_3", "keyword_4", "further_keywords")))
+
+set.seed(2021) #fixed pseudo-random selection
+keywords %>%
+  sample_n(12)
+```
+
+```{r create-database, eval=FALSE}
+
+temp_dir <- tempdir()
+
+create_database ( 
+  indicator_tables = imp,
+  metadata_tables = updated_metadata,
+  labelling_table = labelling_bind,
+  keywords_table = keywords,
+  db_path = temp_dir
+  )
+
+```
+

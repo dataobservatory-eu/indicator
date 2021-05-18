@@ -33,6 +33,7 @@ na_nocb ( example_df )
 }
 \seealso{
 Other approximation functions: 
+\code{\link{impute_indicators}()},
 \code{\link{na_approx}()},
 \code{\link{na_locf}()}
 }

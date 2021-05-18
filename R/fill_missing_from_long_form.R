@@ -16,18 +16,23 @@
 fill_missing_from_long_form <- function( indic_to_fill ) {
 
   fill_indicator <- function(x){
-    x %>%
-      select ( all_of(c("time", "geo", "value", "method", "estimate")) ) %>%
+    tmp_fill <-  x %>%
+      select ( all_of(c("time", "geo", "value")) ) %>%
       pivot_wider ( names_from = "geo", values_from = "value" ) %>%
-      pivot_longer ( cols = -all_of (c("time", "method", "estimate")),
+      pivot_longer ( cols = -all_of (c("time")),
                      names_to = "geo", values_to = "value") %>%
-      mutate ( method   = ifelse (is.na(.data$value), "missing", .data$method),
-               estimate = ifelse (is.na(.data$value), "missing", .data$estimate) ) %>%
       left_join ( x,
-                  by = c("time", "method", "estimate", "geo", "value")
+                  by = c("time", "geo", "value")
                   ) %>%
       tidyr::fill ( all_of(c("unit", "description_indicator", "db_source_code", "frequency")),
-                    .direction = "downup" )
+                    .direction = "downup" ) %>%
+      mutate ( method   = ifelse (is.na(.data$value), "missing", "actual"),
+               estimate = ifelse (is.na(.data$value), "missing", "actual")
+      )
+
+    test_unique_observations(tmp_fill, stop_on_error =  FALSE)
+
+    tmp_fill
   }
 
   nest_to_fill <- indic_to_fill %>%
@@ -40,3 +45,5 @@ fill_missing_from_long_form <- function( indic_to_fill ) {
     tidyr::unnest(cols = .data$data )
 
 }
+
+
