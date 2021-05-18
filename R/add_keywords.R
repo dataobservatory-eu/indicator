@@ -17,7 +17,8 @@
 #' @importFrom assertthat assert_that
 #' @importFrom tidyselect all_of
 #' @return A data frame of indicator codes, descriptions, original source codes, and at least keywords to place them in the observatory.
-#' @keywords internal
+#' @family metadata functions
+#' @export
 #'
 
 add_keywords <- function ( metadata, keywords) {

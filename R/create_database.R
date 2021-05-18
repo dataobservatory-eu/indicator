@@ -8,7 +8,7 @@
 #' @param labelling_table Labelling table created by \code{\link{get_eurostat_indicator}}
 #' @param keywords_table Keywords created for the indicators by \code{\link{add_keywords}}.
 #' @param db_path A path to save the database. Defaults to \code{tempdir()}
-#' @importFrom DBI dbWriteTable dbAppendTable dbDisconnect
+#' @importFrom DBI dbWriteTable dbAppendTable dbDisconnect dbConnect
 #' @importFrom RSQLite SQLite sqliteCopyDatabase
 #' @return An Sqlite database with three tables: indicator, metadata and labelling.
 #' @family database functions
@@ -39,12 +39,12 @@ create_database <- function ( indicator_tables,
                     row.names  = FALSE)
 
   DBI::dbWriteTable(con, "labelling",
-                    labelling,
+                    labelling_table,
                     overwrite = TRUE,
                     row.names  = FALSE)
 
   DBI::dbWriteTable(con, "keywords",
-                    keywords,
+                    keywords_table,
                     overwrite = TRUE,
                     row.names  = FALSE)
 

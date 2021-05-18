@@ -26,4 +26,4 @@ of the observatory.
 
 Further keywords are added to \code{further_keywords} as a concantenated list.
 }
-\keyword{internal}
+\concept{metadata functions}

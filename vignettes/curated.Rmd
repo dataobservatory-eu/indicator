@@ -66,7 +66,7 @@ cloud_indicators <- get_eurostat_indicator(
 
 artistic_activity_indicators <- get_eurostat_indicator ( artistic_activity_raw, id = "ilc_scp07")
 
-household_consumption_indicators  <- get_eurostat_indicator (  household_consumption_raw, id = "nama_10_co3_p3")
+household_consumption_indicators<- get_eurostat_indicator (  household_consumption_raw, id = "nama_10_co3_p3")
 
 ```
 
@@ -93,9 +93,8 @@ The metadata table contains many important information about the indicator.  Som
 
 ```{r indicator-metadata}
   artistic_activity_indicators$metadata %>%
-  ungroup() %>%
-   filter (.data$indicator_code == unique(.data$indicator_code[1])) %>%
-   select ( all_of(c("indicator_code", "actual", "missing", "data_start", "last_update_data_source")))
+      filter (.data$indicator_code == unique(.data$indicator_code[1])) %>%
+      select ( all_of(c("indicator_code", "actual", "missing", "data_start", "last_update_data_source")))
 ```
 
 ## Imputation
@@ -157,8 +156,8 @@ At last, we create keywords.  The keywords help us placing the indicators and th
 
 ```{r create-keyword-table}
 keywords <- add_keywords (artistic_activity_indicators$metadata, list( "music", "economy", "supply", "potential_supply")) %>%
-  bind_rows ( add_keywords (cp_indicators$metadata, list( "music", "economy", "demand", "pcr")) ) %>%
-  bind_rows ( add_keywords (cp_indicators$metadata, list( "music", "economy", "demand", "general")) ) %>%
+  bind_rows ( add_keywords (cloud_indicators$metadata, list( "music", "economy", "demand", "pcr")) ) %>%
+  bind_rows ( add_keywords (household_consumption_indicators$metadata, list( "music", "economy", "demand", "general")) ) %>%
   select ( all_of(c("indicator_code", "keyword_1", "keyword_2", "keyword_3", "keyword_4", "further_keywords")))
 
 set.seed(2021) #fixed pseudo-random selection
@@ -167,15 +166,15 @@ keywords %>%
 ```
 
 ```{r create-database, eval=FALSE}
-
-temp_dir <- tempdir()
-
+not_included_path <- ifelse ( dir.exists("data-raw"), 
+                              yes = file.path("data-raw", "dmo.db"), 
+                              no = file.path("..", "data-raw", "dmo.db"))
 create_database ( 
   indicator_tables = imp,
   metadata_tables = updated_metadata,
   labelling_table = labelling_bind,
   keywords_table = keywords,
-  db_path = temp_dir
+  db_path = not_included_path
   )
 
 ```
