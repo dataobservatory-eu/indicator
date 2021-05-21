@@ -30,3 +30,8 @@ The database functions assemble the metadata and data tables of various indicato
 The metadata function update the metadata tables.
 }
 
+\section{visualisation functions}{
+
+The visualisation function help to provide consistent visualisation (for example, colors) in an observatory.
+}
+

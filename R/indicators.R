@@ -17,6 +17,9 @@
 #' @section metadata functions:
 #' The metadata function update the metadata tables.
 #'
+#' @section visualisation functions:
+#' The visualisation function help to provide consistent visualisation (for example, colors) in an observatory.
+#'
 #' @docType package
 #' @name indicators
 NULL
