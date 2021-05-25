@@ -33,7 +33,7 @@ test_unique_observations <- function( indicator, stop_on_error = FALSE ) {
     return(TRUE)
   } else {
     message ("Non-unique values:")
-    print ( distinct(uniqueness))
+    print (dplyr::distinct(uniqueness))
   }
 
   return(FALSE)
