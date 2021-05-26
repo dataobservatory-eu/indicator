@@ -15,3 +15,6 @@
 
 # indicators 0.0.0.9004
 * tidy_indicator and get_eurostat_indicator is tested against a wide range of real-life data, and it is now passing a number of unit tests. 
+
+# indicators 0.0.0.9005
+* create_observatory_palette() and add_country_groups() to create consistent visualizations in the long-form documentation. An example of creating a new indicator in data-raw.
