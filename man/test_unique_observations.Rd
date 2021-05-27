@@ -2,7 +2,7 @@
 % Please edit documentation in R/test_unique_observations.R
 \name{test_unique_observations}
 \alias{test_unique_observations}
-\title{Test Unique Observations}
+\title{Test Unique Observations for Approximation functions.}
 \usage{
 test_unique_observations(indicator, stop_on_error = FALSE)
 }
@@ -13,7 +13,8 @@ test_unique_observations(indicator, stop_on_error = FALSE)
 message.  If \code{FALSE}, it displays non-unique values.}
 }
 \value{
-\code{TRUE} if the test is met, otherwise and error message.
+\code{TRUE} if the test is met, otherwise warning if \code{stop_on_error = FALSE}
+and returns \code{FALSE} or stops with an error if \code{stop_on_error = TRUE}.
 }
 \description{
 Tidy indicators have observations that are unique. They must have on of the three
@@ -21,4 +22,7 @@ types of values: an actual, an estimated or a missing value.
 }
 \details{
 Approximation and other filling techniques require unique observations.
+
+This is an internal function and can give either a warning or
 }
+\keyword{internal}

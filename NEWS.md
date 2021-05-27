@@ -18,3 +18,6 @@
 
 # indicators 0.0.0.9005
 * create_observatory_palette() and add_country_groups() to create consistent visualizations in the long-form documentation. An example of creating a new indicator in data-raw.
+
+# indicators 0.0.0.9008
+* is_unique_observations() is user-facing and test_unique_observations() only in approximation flows.
