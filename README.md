@@ -6,9 +6,17 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/dataobservatory-eu/indicator/workflows/R-CMD-check/badge.svg)](https://github.com/dataobservatory-eu/indicator/actions)
+[![Codecov test
+coverage](https://codecov.io/gh/dataobservatory-eu/indicator/branch/master/graph/badge.svg)](https://codecov.io/gh/dataobservatory-eu/indicator?branch=master)
 <!-- badges: end -->
 
-The goal of indicators is to …
+The goal of indicators is to harvest data from various open data sources
+and form them into unique indicators of one of the automated data
+observatories on dataobservatory.eu:
+
+-   [economy.dataobservatory.eu](https://greendeal.dataobservatory.eu/)
+-   [greendeal.dataobservatory.eu](https://greendeal.dataobservatory.eu/)
+-   [music.dataobservatory.eu](https://music.dataobservatory.eu/)
 
 ## Installation
 

@@ -11,7 +11,7 @@
 * indicator_forecast now works, but with dependency forecast.
 
 # indicators 0.0.0.9003
-* tidy_indicator and get_eurostat_indicator is tested against a wide range of real-life data, and it is now passing a number of unit tests. 
+* tidy_indicator() and get_eurostat_indicator() is tested against a wide range of real-life data, and it is now passing a number of unit tests. 
 
 # indicators 0.0.0.9004
 * tidy_indicator and get_eurostat_indicator is tested against a wide range of real-life data, and it is now passing a number of unit tests. 
@@ -21,3 +21,4 @@
 
 # indicators 0.0.0.9008
 * is_unique_observations() is user-facing and test_unique_observations() only in approximation flows.
+* [![Codecov test coverage](https://codecov.io/gh/dataobservatory-eu/indicator/branch/master/graph/badge.svg)](https://codecov.io/gh/dataobservatory-eu/indicator?branch=master)

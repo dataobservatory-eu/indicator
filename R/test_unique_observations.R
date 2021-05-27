@@ -50,6 +50,7 @@ is_unique_observations <- function( indicator ) {
 #' message.  If \code{FALSE}, it displays non-unique values.
 #' @importFrom dplyr select group_by add_count filter distinct_all
 #' @importFrom assertthat assert_that
+#' @importFrom utils head
 #' @return \code{TRUE} if the test is met, otherwise warning if \code{stop_on_error = FALSE}
 #' and returns \code{FALSE} or stops with an error if \code{stop_on_error = TRUE}.
 #' @keywords internal
