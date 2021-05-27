@@ -1,0 +1,66 @@
+---
+title: "The indicator Class"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The indicator Class}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(indicators)
+```
+
+The aim of the indicator S3 class to test the schema of individually created or individually imported indicators. It makes sure that the minimal level of metadata, such as keywords are present to place the indicator to the correct place in an existing observatory.  Its constructor fills out trivial metadata automatically, such as creation or update day. 
+
+```{r}
+test_indicator <- indicator (
+  x <- data.frame ( 
+    geo = rep(c("NL", "BE", "LU"), 4), # only checked to be factor or character
+    time = rep(c(2016:2019),3), # must be a Date, an integer, or coercible to integer.
+    value = runif(12, 1,100),  # must be a numeric or an integer
+    estimate = rep("actual", 12) # only checked to be factor or character
+  ), 
+  shortcode = "dmo_test_1", 
+  indicator_code = NULL, # indicaotr_code is used for machine-created codes, and if not present, equals shortcode
+  indicator_name = "Test Indicator", # if not present, equalst the shortcode
+  description = "A curated, human description", 
+  description_at_source = NULL,   # this is the machine-created description which may be very cumbersome
+  code_at_source = NULL, # for machine-read indicators, can be omitted
+  original_source = NA_character_, # if omitted, the observatory itself
+  doi = NULL, # if omitted, fills it with "<not yet assigned or unknown>"
+  date_earliest  = NULL, # if omitted, takes the minimum value of x$time 
+  date_latest  =  NULL, # if omitted, takes the maximum value of x$time 
+  keyword1 = "music",  keyword2 = "economy",  keyword3 = "demand", keyword4 = "pcr"
+)
+```
+
+Generally, the `shortcode = "dmo_test_1"` and `indicator_name = "Test Indicator"` should be suggested by the data curator, and approved by the observatory, because they will be the main identifiers.  They are differentiated from `indicator_code` and `description_at_source` machine generated versions (see `get_eurostat_indicator()`) and not always very useful.  Eurostat's labelling is not comprehensive and the machine read and created descriptions are often not extremely helpful. 
+
+The `description = "A curated, human description"` is strongly encouraged. Machines can read much data, but if an expert curator cannot give it a meaningful name, then it is unlikely to be a useful, usable indicator, and will look bad on our websites and documentations.  Nevertheless, any of the `shortcode` and `indicator_code`, and any of the `description_at_source` and `description` will suffice. 
+
+The actual indicator values in parameter `x` are tested to be well-formatted and tidy. 
+
+Currently it has only one method, the print method, which prints up to the first 10 observations with a short summary. The `keyword1` places the indicator into `music`, or `greendeal`, or `economy`. The `keyword2` places it in a _pillar_ or main chapter, such as `music economy` in the Digita Music Observatory. At least four keywords are needed to place the indicator in our observatories, but more keywords for further use or search are allowed.
+
+```{r}
+print(test_indicator)
+```
+
+The metadata that is needed for placement in one of the existing or planned observatory databases is stored as `attributes` metadata in the R object. This serves mainly as a security function.  If the metadata is not present and cannot be guessed, the indicator is not created.  The contents of the indicator object with the metadata can further be placed into the database.
+
+```{r}
+attributes(test_indicator)
+```
+## To Do
+
+- An importing function that imports from Zenodo datasets, and places them into an indicator object.
+- An exporting function that exports the indicator into the SQlite db.
+

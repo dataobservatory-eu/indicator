@@ -1,6 +1,6 @@
 #' Create Observatory Color Palette
 #'
-#' Create consistent palettes for visualizing data. Additional palette defintions
+#' Create consistent palettes for visualizing data. Additional palette definitions
 #' are possible, but it is important that our long-form documentation looks consistent.
 #'
 #' @param palette_name Currently only one palette is defined, \code{"european_countries"} which

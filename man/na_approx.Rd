@@ -14,7 +14,7 @@ value, frequency, estimate and method columns.}
 A tibble updated with with approximated values.
 }
 \description{
-Fill missing values in a time series (or in a column of a longitudional data set)
+Fill missing values in a time series (or in a column of a longitudinal data set)
 with the approximation method.
 }
 \examples{

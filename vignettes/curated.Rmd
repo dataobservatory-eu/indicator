@@ -25,7 +25,7 @@ require(dplyr)
 
 ## Curation Process
 
-Eurostat publishes `data folders`. We select only the indicators that are direcly relevant to our observatory, in this case, the music observatory. 
+Eurostat publishes `data folders`. We select only the indicators that are directly relevant to our observatory, in this case, the music observatory. 
 
 ```{r curated-selections-from-folders}
   #cloud computer use
@@ -89,7 +89,7 @@ The following labels were found in the curated data (we do not reproduce the ent
 ```
 ### Indicator metadata
 
-The metadata table contains many important information about the indicator.  Some of this data will be later used to identify which indicators need to be re-freshed from source, and re-processed.
+The metadata table contains many important information about the indicator.  Some of this data will be later used to identify which indicators need to be refreshed from source, and reprocessed.
 
 ```{r indicator-metadata}
   artistic_activity_indicators$metadata %>%

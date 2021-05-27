@@ -27,7 +27,7 @@ library(indicators)
 - `year`: Year of observation
 - `month`: Month of observation (often notional for annual indicators)
 - `day`: Day of observation
-- `frequency`: Frequency of observation, currently *A*nnual, *Q*uarterly, *M*onthly, *D*aily, or unknown.
+- `frequency`: Frequency of observation, currently *A* as annual, *Q* as quarterly, *M* as monthly, *D* as daily, or unknown.
 - `estimate`: See below.
 - `db_source`: Database source code.
 
@@ -36,13 +36,13 @@ library(indicators)
 The `estimate` label describes the statistical technique used to impute missing values, or fix geographical coding.
 
 - `actual`: The actual observation value at source, for example, by Eurostat.
-- `missing`: Missing data, which is not filled by *locf*, *nocb*, *interpolate*, *forecast*, *backcaskt* or *impute*.
+- `missing`: Missing data, which is not filled by *locf*, *nocb*, *interpolate*, *forecast*, *backcast* or *impute*.
 - `locf`: last observation carry forward
 - `nocb`: next observation carry backward
 - `interpolate`: interpolation in time between known values
 - `forecast`: forecast with a given model.
 - `backcast`: backcast with a given model.
-- `impute`: An imputation technique was used that is not based on time series, but cross-selctional, geographical or other information. This is likely to be rather specific to the actual indicator.
+- `impute`: An imputation technique was used that is not based on time series, but on a crossselection, or geographical, or other information. This is likely to be rather specific to the actual indicator.
 
 The `recode` means that the regional codes needed to be fixed.
 
@@ -72,4 +72,4 @@ The `recode` means that the regional codes needed to be fixed.
 - `interpolate`: number of *interpolated* values
 - `forecast`: number of values *forecasted* with a given model.
 - `backcast`: number of values *backcasted* with a given model.
--`impute`: number of values filled with any other *imputation* method that is not based on time series, but cross-selctional, geographical or other information.
+-`impute`: number of values filled with any other *imputation* method that is not based on time series, but cross-selectional, geographical or other information.

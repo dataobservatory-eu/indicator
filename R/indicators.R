@@ -7,7 +7,7 @@
 #' The data acquisition functions download raw indicators from various open data sources.
 #'
 #' @section approximation functions:
-#' The approximation functions fill in missing values in times series or longitudional datasets with
+#' The approximation functions fill in missing values in times series or longitudinal with
 #' linear approximation, the last observation carry forward or the next observation carry backwards
 #' methods.
 #'

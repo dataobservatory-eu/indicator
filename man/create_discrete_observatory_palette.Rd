@@ -21,7 +21,7 @@ A named vector with color codes.
 \description{
 Create consistent palettes for visualizing data.
 
-Create consistent palettes for visualizing data. Additional palette defintions
+Create consistent palettes for visualizing data. Additional palette definitions
 are possible, but it is important that our long-form documentation looks consistent.
 }
 \examples{

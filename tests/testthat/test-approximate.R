@@ -19,9 +19,12 @@ benelux_linear_long <- tidyr::pivot_longer( benelux_linear,
 
 test_that("unique indicator value tests", {
   expect_true(test_unique_observations (benelux_linear_long))
-  expect_false(test_unique_observations (
+  expect_warning(test_unique_observations (
     indicator = rbind (benelux_linear_long, benelux_linear_long)
     ))
+  expect_error(test_unique_observations (
+    indicator = rbind (benelux_linear_long, benelux_linear_long), stop_on_error = TRUE
+  ))
 })
 
 approximated_benelux_values <- na_approx (benelux_linear_long)

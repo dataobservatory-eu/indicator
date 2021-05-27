@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "daniel.antal@reprex.nl",
            comment = c(ORCID = "0000-0001-7513-6760"))
-Description: Creates tidy and documented staistical indicators from various statistical warehouses.
+Description: Creates tidy and documented statistical indicators from various statistical warehouses or from the Zenodo data repository.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true

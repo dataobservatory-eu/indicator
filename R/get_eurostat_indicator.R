@@ -23,6 +23,7 @@
 #' @importFrom assertthat assert_that
 #' @importFrom tidyr unite pivot_wider pivot_longer
 #' @importFrom snakecase to_sentence_case
+#' @importFrom rlang .data
 #' @family acquisition functions
 #' @return A list that contains three tables: the indicator, a value label
 #' description table and a metadata table.
@@ -79,8 +80,8 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
 
   indic_downloaded <- indic_downloaded %>%
     mutate ( indicator_code = glue::glue ("eurostat_{id}"),
-             db_source_code = .data$indicator_code,
-             description_indicator = eurostat_toc$title[eurostat_toc$code == id][1] ) # is this make sense? Why do we have multiples?
+             code_at_source = .data$indicator_code,
+             description_at_source = eurostat_toc$title[eurostat_toc$code == id][1] ) # is this make sense? Why do we have multiples?
 
 
   ## The value labels do not have a strict ordering, except for the case when
@@ -123,19 +124,19 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
   if ( ncol(value_codes)>3 ) {
 
     value_labelling <- value_codes %>%
-      select ( -any_of(c("indicator_code", "db_source_code", "description_indicator"))) %>%
+      select ( -any_of(c("indicator_code", "code_at_source", "description_at_source"))) %>%
       eurostat::label_eurostat()
 
     value_labelling <- value_labelling %>%
       purrr::set_names(paste0(names(value_labelling), "_description")) %>%
       bind_cols ( value_codes ) %>%
-      relocate ( -any_of(c("indicator_code", "db_source_code", "description_indicator")),
-                         .after = "description_indicator")
+      relocate ( -any_of(c("indicator_code", "code_at_source", "description_at_source")),
+                         .after = "description_at_source")
 
     value_labels <- value_labelling  %>%
       tidyr::unite ( col = "extend_indicator_code",
                      -contains("description"),
-                     -any_of(c("db_source_code", "indicator_code")),
+                     -any_of(c("code_at_source", "indicator_code")),
                      remove = FALSE
       ) %>%
       tidyr::unite ( col = "extend_description",
@@ -148,15 +149,15 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
   }
 
   common_ext_vars <- names(value_labels)[names(value_labels) %in% names(indicator)]
-  table_specific_vars <- common_ext_vars[!common_ext_vars %in% c("indicator_code", "description_indicator", "db_source_code")]
+  table_specific_vars <- common_ext_vars[!common_ext_vars %in% c("indicator_code", "description_at_source", "code_at_source")]
 
   if ( length(table_specific_vars )>0 ) {
     indicator_ext <- indicator %>%
       left_join ( value_labels, by = common_ext_vars ) %>%
-      relocate ( -any_of(c("indicator_code", "db_source_code", "description_indicator")),
-                 .after = "description_indicator") %>%
-      unite ( col = "description_indicator",
-              all_of (c("description_indicator", "extend_description")),
+      relocate ( -any_of(c("indicator_code", "code_at_source", "description_at_source")),
+                 .after = "description_at_source") %>%
+      unite ( col = "description_at_source",
+              all_of (c("description_at_source", "extend_description")),
               sep = " - ",
               remove = TRUE) %>%
       unite ( col = "indicator_code",
@@ -184,11 +185,11 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
   }
 
   indicator_ext_unit <- indicator_ext %>%
-    mutate ( description_indicator =
-               snakecase::to_sentence_case(.data$description_indicator) ) %>%
+    mutate ( description_at_source =
+               snakecase::to_sentence_case(.data$description_at_source) ) %>%
     left_join ( unit_labels, by = c("unit") ) %>%
-    unite ( col = "description_indicator",
-            all_of (c("description_indicator", "unit_label")),
+    unite ( col = "description_at_source",
+            all_of (c("description_at_source", "unit_label")),
             sep = " ",
             remove = TRUE) %>%
     unite ( col = "indicator_code",
@@ -229,23 +230,25 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
              data_start = .data$`data start`,
              data_end = .data$`data end`,
              title_at_source = .data$title ) %>%
-    mutate ( db_source_code = paste0("eurostat_", .data$code),
+    mutate ( date_indicator = Sys.Date(),
+             original_source = "Eurostat",
+             code_at_source = paste0("eurostat_", .data$code),
              last_update_data_source = as.Date(.data$last_update_data, format = "%d.%m.%Y"),
              last_structure_change = as.Date(.data$last_update_data, format = "%d.%m.%Y"),
              last_update_data = as.Date(Sys.Date()),
              data_start = as.character(.data$data_start),
              data_end = as.character(.data$data_end),
              frequency = indicator_frequency,
-             locf = 0, nocb = 0, approximate=0,
-             forecast = 0, backcast = 0, impute=0,
-             recode = 0) %>%
+             locf=0, nocb=0, approximate=0,
+             forecast=0, backcast=0, impute=0,
+             recode=0) %>%
     select ( -all_of("code"))
 
   check_missing_labels(indicator_final)
 
   metadata_final <- indicator_final %>%
     select (
-      all_of(c("indicator_code", "description_indicator", "db_source_code",
+      all_of(c("indicator_code", "description_at_source", "code_at_source",
                "estimate", "frequency")) ) %>%
     group_by_all() %>%
     add_count() %>%
@@ -259,7 +262,7 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
                                 .data$missing,
                                 0)
     ) %>%
-    left_join ( metadata,  by = c("db_source_code", "frequency")) %>%
+    left_join ( metadata,  by = c("code_at_source", "frequency")) %>%
     distinct_all() %>% # I wonder what duplicates (unit of measure?) %>%
     ungroup()
 
@@ -272,8 +275,8 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
     labelling <- labelling %>%
        full_join (
          value_labelling %>%
-           select ( -all_of( c("description_indicator", "indicator_code",
-                               "db_source_code"))) %>%
+           select ( -all_of( c("description_at_source", "indicator_code",
+                               "code_at_source"))) %>%
            pivot_longer ( contains("_description"),
                           names_to = "var_name2",
                           values_to = "var_label") %>%

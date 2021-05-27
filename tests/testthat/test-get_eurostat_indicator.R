@@ -19,6 +19,8 @@ test_population <- get_eurostat_indicator(
   preselected_indicators = population_long,
   id = "demo_pjan")
 
+test_population$metadata
+
 
 test_that("labelling is correct", {
   expect_true(all(

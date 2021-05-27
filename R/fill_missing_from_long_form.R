@@ -9,6 +9,7 @@
 #' @importFrom purrr map
 #' @importFrom tidyr fill nest unnest pivot_longer pivot_wider
 #' @importFrom tidyselect any_of
+#' @importFrom rlang .data
 #' @return A tibble explicitly showing missing observations.
 #' @keywords internal
 #'
@@ -24,7 +25,7 @@ fill_missing_from_long_form <- function( indic_to_fill ) {
       left_join ( x,
                   by = c("time", "geo", "value")
                   ) %>%
-      tidyr::fill ( all_of(c("unit", "description_indicator", "db_source_code", "frequency")),
+      tidyr::fill ( all_of(c("unit", "description_at_source", "code_at_source", "frequency")),
                     .direction = "downup" ) %>%
       mutate ( method   = ifelse (is.na(.data$value), "missing", "actual"),
                estimate = ifelse (is.na(.data$value), "missing", "actual")

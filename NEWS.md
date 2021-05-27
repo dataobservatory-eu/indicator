@@ -22,3 +22,4 @@
 # indicators 0.0.0.9008
 * is_unique_observations() is user-facing and test_unique_observations() only in approximation flows.
 * [![Codecov test coverage](https://codecov.io/gh/dataobservatory-eu/indicator/branch/master/graph/badge.svg)](https://codecov.io/gh/dataobservatory-eu/indicator?branch=master)
+* The indicator S3 class is added for manual indicator creation or imports from Zenodo with a vignette.

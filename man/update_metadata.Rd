@@ -9,7 +9,7 @@ update_metadata(indic, metadata)
 \arguments{
 \item{indic}{An imputed indicator}
 
-\item{metadata}{A metadata table returnd by \code{\link{get_eurostat_indicator}}.}
+\item{metadata}{A metadata table returned by \code{\link{get_eurostat_indicator}}.}
 }
 \value{
 A data frame that with updated actual, missing, approximated, forecasted, nocb, locf estimates.

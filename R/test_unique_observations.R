@@ -7,6 +7,7 @@
 #'
 #' @param indicator An indicator table to test.
 #' @importFrom dplyr select group_by add_count filter distinct_all
+#' @importFrom rlang .data
 #' @return \code{TRUE} if the test is met, otherwise \code{FALSE}.
 #' @examples{
 #' test_indicator <- data.frame (

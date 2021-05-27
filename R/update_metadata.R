@@ -6,7 +6,7 @@
 #' This function creates a tidy indicator table that is ready to be inserted into a database.
 #'
 #' @param indic An imputed indicator
-#' @param metadata A metadata table returnd by \code{\link{get_eurostat_indicator}}.
+#' @param metadata A metadata table returned by \code{\link{get_eurostat_indicator}}.
 #' @importFrom lubridate day month year
 #' @importFrom dplyr mutate_if group_by ungroup
 #' @importFrom dplyr distinct_all select right_join add_count

@@ -1,6 +1,6 @@
 #' Linear approximation of missing values
 #'
-#' Fill missing values in a time series (or in a column of a longitudional data set)
+#' Fill missing values in a time series (or in a column of a longitudinal data set)
 #' with the approximation method.
 #'
 #' @param indicator A tibble created by \code{\link{get_eurostat_indicator}}. with time, geo,
