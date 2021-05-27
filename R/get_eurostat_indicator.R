@@ -176,6 +176,7 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
 
   if ( all(is.na(units$unit)) ) {
     units$unit_label <- "[no unit]"
+    unit_labels <- units
   } else {
     unit_labels <- eurostat::label_eurostat(units) %>%
       mutate ( unit_label = paste0("[", .data$unit, "]")) %>%
@@ -184,10 +185,11 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
       bind_cols ( units )
   }
 
-  indicator_ext_unit <- indicator_ext %>%
-    mutate ( description_at_source =
-               snakecase::to_sentence_case(.data$description_at_source) ) %>%
-    left_join ( unit_labels, by = c("unit") ) %>%
+  # Avoid recapitalizing many thousands of identical sentencing -----------------------
+  labelling_tbl <-   indicator_ext %>%
+    select( all_of(c("indicator_code", "unit", "description_at_source"))) %>%
+    distinct_all() %>%
+    left_join ( unit_labels, by = "unit" ) %>%
     unite ( col = "description_at_source",
             all_of (c("description_at_source", "unit_label")),
             sep = " ",
@@ -197,6 +199,12 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
             sep = "_",
             remove = FALSE) %>%
     mutate ( indicator_code = snakecase::to_snake_case(.data$indicator_code))
+
+
+  indicator_ext_unit <- indicator_ext %>%
+    select ( -all_of (c("description_at_source", "unit"))) %>%
+    left_join ( labelling_tbl,
+                "indicator_code" )
 
   # We make implicitly missing observations explicit, and leave out the separate
   # year, month, day columns---------------------------------------------------
