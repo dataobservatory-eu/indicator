@@ -1,0 +1,35 @@
+#' Metadata of the Small Countries' Population Indicator
+#'
+#' The metadata of the indicator containing the total population of three small
+#' countries, Andorra, Liechtenstein and San Marino from 2010 to 2020.
+#'
+#' Processed with \code{\link{get_eurostat_indicator}}.
+#'
+#' @format A data frame with 1 row and 21 variables:
+#' \describe{
+#'   \item{shortcode}{A curated short code, or the indicator_code, if not available}
+#'   \item{indicator_code}{A machine-assigned unique identifier for the indicator}
+#'   \item{description_at_source}{The original description of the observation}
+#'   \item{observations}Total number of actual, missing, imputed or estimated observations}
+#'   \item{actual}{Number of actual observation (at source)}
+#'   \item{missing}{Number of missing observations.}
+#'   \item{approximate}{Number of approximated data points}
+#'   \item{forecast}{Number of approximated data points}
+#'   \item{backcast}{Number of approximated data points}
+#'   \item{locf}{Number of last observation carry forward imputations}
+#'   \item{nocb}{Number of next observation carry backward imputations}
+#'   \item{impute}{Number of other imputed data points}
+#'   \item{recode}{Number of observations that needed recoding}
+#'   \item{code_at_source}{Identifier code used at original source}
+#'   \item{title_at_source}{Title at original source, if applicable}
+#'   \item{frequency}{A = annual, Q = quarterly, M = monthly, D = daily}
+#'   \item{last_update_data}{Last update of the data}
+#'   \item{last_update_at_source}{Last update of the data at source}
+#'   \item{last_structure_change}{Last structural change of the data at source}
+#'   \item{data_start}{First time of observation}
+#'   \item{data_end}{Last time of (actual) observation}
+#'   \item{original_source}{Name of the original data source, if applicable}
+#' }
+#' @source \url{https://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=demo_pjan&lang=en}
+#' @family data files
+"small_population_metadata"

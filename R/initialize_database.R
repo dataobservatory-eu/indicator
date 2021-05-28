@@ -10,27 +10,27 @@ create_metadata_table <- function( con ) {
   statement =
   "CREATE TABLE metadata  (
     indicator_code TEXT,
-   title_at_source TEXT,
-   description_indicator TEXT,
-   frequency TEXT,
-   code TEXT,
-   type TEXT,
-   last_update_data INT,
-   last_update_data_source INT,
-   last_structure_change INT,
-   data_start TEXT,
-   data_end TEXT,
-   db_source_code TEXT,
-   value REAL,
-   actual INT,
-   missing INT,
-   locf INT,
-   nocb INT,
-   interpolate INT,
-   forecast INT,
-   backcast INT,
-   impute INT,
-   PRIMARY KEY (db_source_code)
+    title_at_source TEXT,
+    description_indicator TEXT,
+    frequency TEXT,
+    code TEXT,
+    type TEXT,
+    last_update_data INT,
+    last_update_data_source INT,
+    last_structure_change INT,
+    data_start TEXT,
+    data_end TEXT,
+    db_source_code TEXT,
+    value REAL,
+    actual INT,
+    missing INT,
+    locf INT,
+    nocb INT,
+    interpolate INT,
+    forecast INT,
+    backcast INT,
+    impute INT,
+    PRIMARY KEY (db_source_code)
   )")
 
 }
@@ -65,7 +65,7 @@ create_indicator_table <- function( con ) {
                   geo TEXT,
                   time INT,
                   value REAL,
-                  UNIT TEXT,
+                  unit TEXT,
                   indicator_source_code TEXT,
                   db_source_code TEXT,
                   year INT
@@ -73,7 +73,7 @@ create_indicator_table <- function( con ) {
                   day INT,
                   frequency TEXT,
                   validate TEXT,
-                 PRIMARY KEY (db_source_code) )
+                  PRIMARY KEY (db_source_code) )
               ")
 
 }

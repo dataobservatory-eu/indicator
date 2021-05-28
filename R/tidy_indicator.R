@@ -1,6 +1,8 @@
 #' Tidy Raw Indicator
 #'
 #' The indicator downloaded from Eurostat is brought to a tidy format.
+#' Adds \code{method}, \code{estimate}, and  \code{unit}, if they
+#' are missing.
 #'
 #' @param indic_raw A raw Eurostat indicator
 #' @param indicator_labels The codes and description of \code{indic} columns.

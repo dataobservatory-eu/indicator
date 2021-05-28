@@ -13,7 +13,7 @@ indicator(
   indicator_name = NULL,
   description,
   description_at_source = NA_character_,
-  date_indicator = NULL,
+  last_update_data = NULL,
   date_earliest = NULL,
   date_latest = NULL,
   original_source = NA_character_,
@@ -48,7 +48,7 @@ for the data catalogue of the data observatory.}
 \item{description_at_source}{A machine read description from the source, may require
 manual revision.}
 
-\item{date_indicator}{The creation/refreshment date of the indicator. If omitted, calls
+\item{last_update_data}{The creation/refreshment date of the indicator. If omitted, calls
 \code{Sys.Date()}.}
 
 \item{date_earliest}{The date of the earliest observation. Can be a numeric containing a year.}
@@ -80,20 +80,20 @@ many fixed attributes.
 }
 \examples{
 test_indicator <- indicator (
-                     x <- data.frame ( 
-                     geo = rep(c("NL", "BE", "LU"), 4), 
-                     time = rep(c(2016:2019),3), 
-                     value = runif(12, 1,100), 
+                     x <- data.frame (
+                     geo = rep(c("NL", "BE", "LU"), 4),
+                     time = rep(c(2016:2019),3),
+                     value = runif(12, 1,100),
                      estimate = rep("actual", 12)
-                     ), 
-   shortcode = "observatory_test_1", 
-   description = "A test indicator with random numbers", 
-   date_indicator = as.Date ( "2020-08-24"),
+                     ),
+   shortcode = "observatory_test_1",
+   description = "A test indicator with random numbers",
+   last_update_data = as.Date ( "2020-08-24"),
    date_earliest  = min (x$time, na.rm=TRUE),
    date_latest  =  max(x$time, na.rm=TRUE),
    keyword1 = "music",  keyword2 = "economy",  keyword3 = "demand", keyword4="pcr"
 )
 
-## Only the first 10 observations are printed 
+## Only the first 10 observations are printed
 print (test_indicator)
 }

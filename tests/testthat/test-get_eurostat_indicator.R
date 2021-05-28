@@ -22,15 +22,21 @@ test_population <- get_eurostat_indicator(
 test_population$metadata
 
 
+test_population$indicator %>%
+  filter ( .data$shortcode == "eurostat_demo_pjan_t_nr")
+
+names ( test_population$indicator )
+
+
 test_that("labelling is correct", {
   expect_true(all(
-    c("[number]", "Females", "Males", "Total") %in% test_population$labelling$var_label
+    c("[Number]", "[Number]", "[Number]", "Females", "Males", "Total") %in% test_population$labelling$var_label
   ))
   expect_true(all(
-    c("NR", "F", "M", "T") %in% test_population$labelling$var_code
+    c("NR", "NR","NR", "F", "M", "T") %in% test_population$labelling$var_code
   ))
   expect_true(all(
-    c("unit", "sex", "sex", "sex") %in% test_population$labelling$var_name
+    c("unit", "unit", "unit", "sex", "sex", "sex") %in% test_population$labelling$var_name
   ))
 })
 

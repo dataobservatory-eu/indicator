@@ -12,4 +12,5 @@
 #'   \item{values}{number of people}
 #' }
 #' @source \url{https://appsso.eurostat.ec.europa.eu/nui/show.do?dataset=demo_pjan&lang=en}
+#' @family data files
 "small_population"

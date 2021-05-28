@@ -3,7 +3,8 @@
 #' Get a Eurostat data product and save its metadata and the data in
 #' tidy tables.
 #'
-#' This function creates a tidy indicator table that is ready to be inserted into a database.
+#' This function creates a tidy indicator table that is ready to be
+#' inserted into a database.
 #'
 #' @param id The identifier code of a Eurostat data product.
 #' \code{\link[eurostat]{get_eurostat}} will be called with \code{id} if
@@ -14,7 +15,7 @@
 #' @param eurostat_toc The Eurostat table of contents
 #' @importFrom lubridate day month year
 #' @importFrom dplyr mutate filter case_when relocate bind_cols group_by_all
-#' @importFrom dplyr distinct_all select if_else rename left_join add_count
+#' @importFrom dplyr distinct_all select if_else rename left_join add_count mutate_all
 #' @importFrom dplyr anti_join ungroup
 #' @importFrom eurostat get_eurostat label_eurostat
 #' @importFrom purrr set_names
@@ -123,22 +124,40 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
 
   if ( ncol(value_codes)>3 ) {
 
-    value_labelling <- value_codes %>%
+    ## There are further columns, these need to be added to the indicator_code to make it unique
+    to_add_to_code <- indicator %>%
+      select ( -any_of(c("indicator_code", "code_at_source", "description_at_source", "geo", "year", "month", "day",
+                         "estimate", "method", "frequency", "time", "value"))) %>%
+      mutate_all(tolower) %>%
+      relocate ( .data$unit, .after = everything()) %>% # tidy_indicator() makes sure it is present
+      unite ( col = "addition", everything(), sep = "_")
+
+    indicator$indicator_code <- paste0(indicator$indicator_code, "_", to_add_to_code$addition)
+
+    ## we need to extend the indicator code with the further variables
+    value_codes_ext <- indicator %>%
+      select ( -any_of (c("value", "geo", "time", "unit",
+                          "year", "month", "day",
+                          "frequency", "estimate", "method"))
+      ) %>%
+      distinct_all()
+
+    value_labelling <- value_codes_ext  %>%
       select ( -any_of(c("indicator_code", "code_at_source", "description_at_source"))) %>%
       eurostat::label_eurostat()
 
     value_labelling <- value_labelling %>%
       purrr::set_names(paste0(names(value_labelling), "_description")) %>%
-      bind_cols ( value_codes ) %>%
+      bind_cols ( value_codes_ext ) %>%
       relocate ( -any_of(c("indicator_code", "code_at_source", "description_at_source")),
                          .after = "description_at_source")
 
     value_labels <- value_labelling  %>%
-      tidyr::unite ( col = "extend_indicator_code",
-                     -contains("description"),
-                     -any_of(c("code_at_source", "indicator_code")),
-                     remove = FALSE
-      ) %>%
+      #tidyr::unite ( col = "extend_indicator_code",
+      #               -contains("description"),
+      #               -any_of(c("code_at_source", "indicator_code")),
+      #               remove = FALSE
+      #) %>%
       tidyr::unite ( col = "extend_description",
                      contains("_description"),
                      sep = " - ",
@@ -160,28 +179,30 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
               all_of (c("description_at_source", "extend_description")),
               sep = " - ",
               remove = TRUE) %>%
-      unite ( col = "indicator_code",
-              all_of (c("indicator_code", "extend_indicator_code")),
-              sep = "_",
-              remove = TRUE) %>%
+      #unite ( col = "indicator_code",
+      #        all_of (c("indicator_code", "extend_indicator_code")),
+      #        sep = "_",
+      #        remove = TRUE) %>%
       select ( -all_of(table_specific_vars ))
   } else {
     indicator_ext <- indicator
   }
 
+
   ## Create the unit labeling -------------------
   units <- indicator_ext %>%
-    select ( any_of ("unit"))  %>%
+    select ( any_of (c("indicator_code", "unit")) )  %>%
     distinct_all()
 
   if ( all(is.na(units$unit)) ) {
     units$unit_label <- "[no unit]"
     unit_labels <- units
   } else {
-    unit_labels <- eurostat::label_eurostat(units) %>%
+    unit_labels <- eurostat::label_eurostat(units %>%
+                                              select (-all_of("indicator_code"))) %>%
       mutate ( unit_label = paste0("[", .data$unit, "]")) %>%
       select ( all_of("unit_label")) %>%
-      mutate ( unit_label = tolower(as.character(.data$unit_label))) %>%
+      #mutate ( unit_label = tolower(as.character(.data$unit_label))) %>%
       bind_cols ( units )
   }
 
@@ -189,15 +210,15 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
   labelling_tbl <-   indicator_ext %>%
     select( all_of(c("indicator_code", "unit", "description_at_source"))) %>%
     distinct_all() %>%
-    left_join ( unit_labels, by = "unit" ) %>%
+    left_join ( unit_labels, by = c("indicator_code", "unit") ) %>%
     unite ( col = "description_at_source",
             all_of (c("description_at_source", "unit_label")),
             sep = " ",
             remove = TRUE) %>%
-    unite ( col = "indicator_code",
-            all_of (c("indicator_code", "unit")),
-            sep = "_",
-            remove = FALSE) %>%
+    ##unite ( col = "indicator_code",
+    #        all_of (c("indicator_code", "unit")),
+    #        sep = "_",
+    #        remove = FALSE) %>%
     mutate ( indicator_code = snakecase::to_snake_case(.data$indicator_code))
 
 
@@ -214,7 +235,11 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
     # in the dataframe. We make them explicit.
     indic_to_fill = indicator_ext_unit )
 
-  indicator_final <- dplyr::ungroup(indicator_final)
+  indicator_final <- dplyr::ungroup(indicator_final) %>%
+    mutate ( indicator_code = tolower(.data$indicator_code)) %>%
+    mutate ( shortcode  = indicator_code ) %>%
+    relocate ( shortcode, .before = everything()) %>%
+    relocate ( all_of(c("indicator_code", "code_at_source")), .after = everything())
 
   ## Further metadata and assertions  -------------------------------------------
   indicator_frequency <- unique( indicator_final$frequency)
@@ -238,15 +263,15 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
              data_start = .data$`data start`,
              data_end = .data$`data end`,
              title_at_source = .data$title ) %>%
-    mutate ( date_indicator = Sys.Date(),
-             original_source = "Eurostat",
+    mutate ( original_source = "Eurostat",
              code_at_source = paste0("eurostat_", .data$code),
-             last_update_data_source = as.Date(.data$last_update_data, format = "%d.%m.%Y"),
+             last_update_at_source = as.Date(.data$last_update_data, format = "%d.%m.%Y"),
              last_structure_change = as.Date(.data$last_update_data, format = "%d.%m.%Y"),
              last_update_data = as.Date(Sys.Date()),
              data_start = as.character(.data$data_start),
              data_end = as.character(.data$data_end),
              frequency = indicator_frequency,
+             observations = nrow(indicator_final),
              locf=0, nocb=0, approximate=0,
              forecast=0, backcast=0, impute=0,
              recode=0) %>%
@@ -256,7 +281,7 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
 
   metadata_final <- indicator_final %>%
     select (
-      all_of(c("indicator_code", "description_at_source", "code_at_source",
+      all_of(c("shortcode", "indicator_code", "description_at_source", "code_at_source",
                "estimate", "frequency")) ) %>%
     group_by_all() %>%
     add_count() %>%
@@ -270,36 +295,48 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
                                 .data$missing,
                                 0)
     ) %>%
-    left_join ( metadata,  by = c("code_at_source", "frequency")) %>%
+    left_join ( metadata, by = c("code_at_source", "frequency")) %>%
     distinct_all() %>% # I wonder what duplicates (unit of measure?) %>%
-    ungroup()
+    ungroup() %>%
+    relocate ( all_of(c("shortcode", "indicator_code", "description_at_source", "last_update_data", "last_update_at_source", "frequency",
+                        "observations", "actual", "missing", "approximate", "forecast", "backcast",
+                        "impute", "locf", "nocb", "recode", "data_start", "data_end")),
+               .before = everything())
 
   labelling <- unit_labels %>%
     mutate ( var_name = "unit") %>%
     rename ( var_code = .data$unit,
              var_label = .data$unit_label )
 
+  value_labelling2 <- value_labelling %>%
+    right_join ( select (metadata_final, all_of(c("indicator_code", "shortcode"))),
+                by = "indicator_code")
+
   if ( ncol(value_labelling)>0 ) {
-    labelling <- labelling %>%
+    labelling_final <- labelling %>%
        full_join (
-         value_labelling %>%
-           select ( -all_of( c("description_at_source", "indicator_code",
-                               "code_at_source"))) %>%
+         value_labelling2 %>%
+           select ( -all_of( c("description_at_source", "shortcode",
+                               "code_at_source")) ) %>%
            pivot_longer ( contains("_description"),
                           names_to = "var_name2",
                           values_to = "var_label") %>%
-           pivot_longer ( -all_of(c("var_name2", "var_label")),
+           pivot_longer ( -all_of(c("var_name2", "var_label", "indicator_code")),
                           names_to = "var_name",
                           values_to = "var_code") %>%
            mutate ( var_name2 = gsub("_description", "", .data$var_name2)) %>%
            filter ( .data$var_name2 == .data$var_name) %>%
            select ( -all_of("var_name2") ),
-         by = c("var_label", "var_code", "var_name")
-         )
-  }
+         by = c("var_label", "indicator_code", "var_code", "var_name")
+         ) %>%
+      left_join (value_labelling2 %>% select ( all_of(c("indicator_code", "shortcode"))),
+                 by = "indicator_code")
+  } else { labelling_final  <- labelling }
 
-  list ( indicator = indicator_final,
-         labelling = labelling,
-         metadata = metadata_final )
+
+  list ( indicator = indicator_final %>% select ( -all_of(c("code_at_source", "description_at_source"))),
+         labelling = labelling_final,
+         metadata = metadata_final %>%
+           select ( -any_of("type")))
 }
 

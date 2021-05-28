@@ -24,4 +24,11 @@ small_population
 A dataset containing male and female population (all age groups) of three small
 countries, Andorra, Liechtenstein and San Marino from 2010 to 2020.
 }
+\seealso{
+Other data files: 
+\code{\link{small_population_indicator}},
+\code{\link{small_population_labelling}},
+\code{\link{small_population_metadata}}
+}
+\concept{data files}
 \keyword{datasets}

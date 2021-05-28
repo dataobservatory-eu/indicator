@@ -16,5 +16,7 @@ A tibble with fixed form.
 }
 \description{
 The indicator downloaded from Eurostat is brought to a tidy format.
+Adds \code{method}, \code{estimate}, and  \code{unit}, if they
+are missing.
 }
 \keyword{internal}

@@ -20,6 +20,8 @@
 #' @section visualisation functions:
 #' The visualisation function help to provide consistent visualisation (for example, colors) in an observatory.
 #'
+#' @section data files:
+#'
 #' @docType package
 #' @name indicators
 NULL

@@ -26,7 +26,8 @@ Get a Eurostat data product and save its metadata and the data in
 tidy tables.
 }
 \details{
-This function creates a tidy indicator table that is ready to be inserted into a database.
+This function creates a tidy indicator table that is ready to be
+inserted into a database.
 }
 \seealso{
 Other acquisition functions: 

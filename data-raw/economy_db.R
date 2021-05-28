@@ -21,7 +21,9 @@ business_demography <- eurostat::get_eurostat(id = "bd_hgnace2_r3")
 business_demography_raw <- eurostat::get_eurostat(id = "bd_hgnace2_r3") %>%
   filter (.data$indic_sb %in% c("V11920", "V11930"),
           .data$nace_r2 == "B-S_X_K642",
-          .data$geo %in% unique(business_demography$geo[which(nchar(business_demography$geo) == 2)]))
+          .data$geo %in% unique(
+            business_demography$geo[which(nchar(business_demography$geo) == 2)])
+          )
 
 # HIGH-TECH PATENT APPLICATIONS=====
 # High-tech patent applications to the EPO by priority year by NUTS 3 regions [PAT_EP_RTEC]
