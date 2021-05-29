@@ -10,7 +10,7 @@
 #'   \item{shortcode}{A curated short code, or the indicator_code, if not available}
 #'   \item{indicator_code}{A machine-assigned unique identifier for the indicator}
 #'   \item{description_at_source}{The original description of the observation}
-#'   \item{observations}Total number of actual, missing, imputed or estimated observations}
+#'   \item{observations}{Total number of actual, missing, imputed or estimated observations}
 #'   \item{actual}{Number of actual observation (at source)}
 #'   \item{missing}{Number of missing observations.}
 #'   \item{approximate}{Number of approximated data points}
