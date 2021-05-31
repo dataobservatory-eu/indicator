@@ -45,7 +45,7 @@ add_keywords <- function ( description_table,
 
   description_table %>%
     ungroup() %>%
-    select ( all_of(c("shortcode", "description",
+    select ( all_of(c("shortcode", "description", "indicator_code",
                       "description_at_source", "original_source"))
              ) %>%
     mutate ( keyword_1 = keywords[[1]],

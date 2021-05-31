@@ -106,6 +106,8 @@ high_tech_patents_indicators <- get_eurostat_indicator(
   preselected_indicators = high_tech_patents_raw,
   id = "pat_ep_rtec")
 
+names (high_tech_patents_indicators)
+
 patents_nuts3_indicators <- get_eurostat_indicator(
   preselected_indicators = patents_nuts3_raw,
   id = "pat_ep_ripc")
@@ -127,8 +129,12 @@ patents_nuts3_indicators <- get_eurostat_indicator(
 edo_indicators_to_impute <- high_tech_patents_indicators$indicator %>%
   bind_rows ( patents_nuts3_indicators$indicator )
 
+names (patents_nuts3_indicators$description )
+
 edo_metadata_to_update <- high_tech_patents_indicators$metadata %>%
   bind_rows ( patents_nuts3_indicators$metadata )
+
+names ( edo_metadata_to_update )
 
 edo_labelling_bind <- high_tech_patents_indicators$labelling %>%
   bind_rows ( patents_nuts3_indicators$labelling )
@@ -141,22 +147,28 @@ edo_updated_metadata <- update_metadata(
   metadata = edo_metadata_to_update )
 
 edo_updated_metadata %>%
-  select ( all_of ( c("indicator_code", "actual", "missing",
+  select ( all_of ( c("shortcode", "actual", "missing",
                       "nocb", "locf", "approximate", "forecast")))
 
-edo_keywords <- add_keywords (description_table = high_tech_patents_indicators$descriptions,
+edo_keywords <- add_keywords (description_table = high_tech_patents_indicators$description,
                           keywords = list( "economy", "ipr", "supply", "rd")) %>%
-  bind_rows ( add_keywords (patents_nuts3_indicators$descriptions,
+  bind_rows ( add_keywords (patents_nuts3_indicators$description,
                             list( "economy", "ipr", "supply", "rd")) )
+
+names (edo_keywords)
 
 edo_save_path <- ifelse ( dir.exists("data-raw"),
                               yes = file.path("data-raw", "economy.db"),
                               no = file.path("..", "data-raw", "economy.db"))
 
-create_database (indicator_tables = edo_imp,
-                 metadata_tables = edo_updated_metadata,
+create_database (indicator_table = edo_imp,
+                 metadata_table = edo_updated_metadata,
                  labelling_table = edo_labelling_bind,
                  description_table = edo_keywords,
                  db_path = edo_save_path)
 
 file.exists(edo_save_path)
+
+names ( edo_imp)
+names ( edo_updated_metadata )
+names ( edo_keywords )
