@@ -8,7 +8,7 @@ create_database(
   indicator_tables,
   metadata_tables,
   labelling_table,
-  keywords_table,
+  description_table,
   db_path = tempdir()
 )
 }
@@ -19,7 +19,8 @@ create_database(
 
 \item{labelling_table}{Labelling table created by \code{\link{get_eurostat_indicator}}}
 
-\item{keywords_table}{Keywords created for the indicators by \code{\link{add_keywords}}.}
+\item{description_table}{Description and keywords created for the indicators
+by \code{\link{add_keywords}}.}
 
 \item{db_path}{A path to save the database. Defaults to \code{tempdir()}}
 }

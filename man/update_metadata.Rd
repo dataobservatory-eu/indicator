@@ -12,7 +12,8 @@ update_metadata(indic, metadata)
 \item{metadata}{A metadata table returned by \code{\link{get_eurostat_indicator}}.}
 }
 \value{
-A data frame that with updated actual, missing, approximated, forecasted, nocb, locf estimates.
+A data frame that with updated actual, missing, approximated, forecasted,
+nocb, locf estimates.
 }
 \description{
 Get a Eurostat data product and save its metadata and the data in

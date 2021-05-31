@@ -145,18 +145,18 @@ updated_metadata %>%
   select ( all_of ( c("indicator_code", "actual", "missing",
                       "nocb", "locf", "approximate", "forecast")))
 
-keywords <- add_keywords (metadata = high_tech_patents_indicators$metadata,
+keywords <- add_keywords (description_table = high_tech_patents_indicators$descriptions,
                           keywords = list( "economy", "ipr", "supply", "rd")) %>%
-  bind_rows ( add_keywords (patents_nuts3_indicators$metadata,
+  bind_rows ( add_keywords (patents_nuts3_indicators$descriptions,
                             list( "economy", "ipr", "supply", "rd")) )
 
-not_included_path <- ifelse ( dir.exists("data-raw"),
+save_path <- ifelse ( dir.exists("data-raw"),
                               yes = file.path("data-raw", "economy.db"),
                               no = file.path("..", "data-raw", "economy.db"))
 
 create_database (indicator_tables = imp,
                  metadata_tables = updated_metadata,
                  labelling_table = labelling_bind,
-                 keywords_table = keywords,
-                 db_path = not_included_path)
+                 description_table = keywords,
+                 db_path = save_path)
 
