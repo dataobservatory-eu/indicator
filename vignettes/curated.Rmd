@@ -138,6 +138,8 @@ And then carry out the imputation. In case you have many indicators, maybe it is
 imp <- impute_indicators ( indic = indicators_to_impute )
 ```
 
+The full description of the indicator table with an example is the [small_population_indicator](http://indicators.dataobservatory.eu/reference/small_population_indicator.html) dataset.
+
 ### Update the metadata 
 
 This is not yet unit-tested, and does not seem to work properly. Basically we count the number of `approximated`, `next observation carry forward`, `forecasted`, and `last observation carry forward` estimates. 
@@ -145,6 +147,8 @@ This is not yet unit-tested, and does not seem to work properly. Basically we co
 ```{r update-metadata}
 updated_metadata <- update_metadata(imp, metadata = metadata_to_update )
 ```
+
+The full description of the metadata table with an example is the [small_population_metadata](http://indicators.dataobservatory.eu/reference/small_population_metadata.html) dataset.
 
 They should show up here, but it suspicious that some are gone missing: 
 
@@ -179,6 +183,11 @@ set.seed(2021) #fixed pseudo-random selection
 keywords %>%
   sample_n(12)
 ```
+
+The full description of the descriptive metadata table with an example is the [small_population_description](http://indicators.dataobservatory.eu/reference/small_population_description.html) dataset.
+
+## Create the Database
+
 
 ```{r create-database, eval=FALSE}
 dmo_path <- ifelse ( 
