@@ -210,3 +210,8 @@ create_database (
   db_path = dmo_path
   )
 ```
+```{r}
+disc_con <- RSQLite::dbConnect(RSQLite::SQLite(), dmo_path  )
+DBI::dbListTables(disc_con)
+```
+
