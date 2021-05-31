@@ -26,6 +26,7 @@ countries, Andorra, Liechtenstein and San Marino from 2010 to 2020.
 }
 \seealso{
 Other data files: 
+\code{\link{small_population_description}},
 \code{\link{small_population_indicator}},
 \code{\link{small_population_labelling}},
 \code{\link{small_population_metadata}}

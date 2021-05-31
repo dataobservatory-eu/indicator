@@ -3,25 +3,40 @@
 #' Download and process Eurostat indicators, create their labelling table and descriptive
 #' metadata about the indicators. Save the two metadata tables into metadata tables, and
 #' the tidy indicators themselves into an indicator table.
-#' @param indicator_tables Indicators created by \code{\link{get_eurostat_indicator}} or \code{\link{impute_indicators}}.
-#' @param metadata_tables Meatadata tables created by \code{\link{get_eurostat_indicator}} or \code{\link{update_metadata}}.
+#' @param indicator_table Indicators created by \code{\link{get_eurostat_indicator}} or \code{\link{impute_indicators}}.
+#' @param metadata_table Meatadata tables created by \code{\link{get_eurostat_indicator}} or \code{\link{update_metadata}}.
 #' @param labelling_table Labelling table created by \code{\link{get_eurostat_indicator}}
 #' @param description_table Description and keywords created for the indicators
 #' by \code{\link{add_keywords}}.
 #' @param db_path A path to save the database. Defaults to \code{tempdir()}
-#' @importFrom DBI dbWriteTable dbAppendTable dbDisconnect dbConnect
+#' @importFrom DBI dbWriteTable dbAppendTable dbDisconnect dbConnect dbReadTable
 #' @importFrom RSQLite SQLite sqliteCopyDatabase
-#' @return An Sqlite database with three tables: indicator, metadata and labelling.
+#' @return An SQLite database with four tables: indicator, metadata, labelling and description.
 #' @family database functions
 #' @examples
-#' \dontrun{
-#' ## See vignette
-#' )
+#' \donttest{
+#' data ( "small_population")
+#' population_long <- small_population %>%
+#'   pivot_wider( names_from = "geo", values_from = "values") %>%
+#'   pivot_longer ( cols = all_of(c("LI", "AD", "SM")),
+#'                  names_to = "geo", values_to = "values")
+#'
+#' small_population_data <- get_eurostat_indicator(
+#'   preselected_indicators = population_long,
+#'   id = "demo_pjan")
+#'
+#'
+#' create_database (indicator_table = small_population_data$indicator,
+#'                  metadata_table = small_population_data$metadata,
+#'                  labelling_table = small_population_data$labelling,
+#'                  description_table = small_population_data$description,
+#'                  db_path = file.path(tempdir(), "smallpopulation.db"))
+#'
 #' }
 #' @export
 
-create_database <- function ( indicator_tables,
-                              metadata_tables,
+create_database <- function ( indicator_table,
+                              metadata_table,
                               labelling_table,
                               description_table,
                               db_path = tempdir() ) {
@@ -30,12 +45,12 @@ create_database <- function ( indicator_tables,
 
 
   DBI::dbWriteTable(con, "indicator",
-                    indicator_tables,
+                    indicator_table,
                     overwrite = TRUE,
                     row.names  = FALSE)
 
   DBI::dbWriteTable(con, "metadata",
-                    metadata_tables,
+                    metadata_table,
                     overwrite = TRUE,
                     row.names  = FALSE)
 

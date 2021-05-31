@@ -356,8 +356,11 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
     relocate ( contains( "keyword"), .after = "description")
 
   indicator_final <- indicator_final %>%
-    select ( -all_of(c("code_at_source", "description_at_source", "indicator_code"))
+    select ( all_of(c("shortcode", "geo", "time", "unit", "value", "estimate", "method", "frequency" ))
     )
+
+  labelling_final <- labelling_final %>%
+    select ( all_of(c("shortcode", "var_name", "var_code", "var_label")))
 
   list ( indicator = indicator_final,
          labelling = labelling_final,

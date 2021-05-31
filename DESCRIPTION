@@ -1,6 +1,6 @@
 Package: indicators
 Title: Tidy Statistical Indicators
-Version: 0.0.0.9006
+Version: 0.1.0
 Authors@R:
     c(person("Daniel", "Antal", role = c("aut", "cre"),
              email = "daniel.antal@dataobservatory.eu", 

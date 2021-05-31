@@ -19,15 +19,6 @@ test_population <- get_eurostat_indicator(
   preselected_indicators = population_long,
   id = "demo_pjan")
 
-test_population$metadata
-
-
-test_population$indicator %>%
-  filter ( .data$shortcode == "eurostat_demo_pjan_t_nr")
-
-names ( test_population$indicator )
-
-
 test_that("labelling is correct", {
   expect_true(all(
     c("[Number]", "[Number]", "[Number]", "Females", "Males", "Total") %in% test_population$labelling$var_label
@@ -42,14 +33,11 @@ test_that("labelling is correct", {
 
 indic_df <- test_population$indicator
 
-unique ( indic_df$indicator_code)
-
-
 test_that("correct actual values are returned", {
   # number of actual population observations for females in original and returned data frame
   expect_equal(
     indic_df %>%
-      filter( .data$indicator_code == 'eurostat_demo_pjan_f_nr',
+      filter( .data$shortcode == 'eurostat_demo_pjan_f_nr',
               !is.na(.data$value)) %>%
       nrow(),
     population_long %>% filter ( .data$sex == "F",
@@ -58,7 +46,7 @@ test_that("correct actual values are returned", {
   expect_true(
     # explicit missing numbers increase the number of missings
     {indic_df %>%
-        filter( .data$indicator_code == 'eurostat_demo_pjan_f_nr',
+        filter( .data$shortcode == 'eurostat_demo_pjan_f_nr',
                 is.na(.data$value)) %>%
         nrow() } > {
           population_long %>% filter ( .data$sex == "F",
@@ -70,28 +58,28 @@ test_that("correct actual values are returned", {
 })
 
 actual_female_population <-indic_df %>%
-    filter( .data$indicator_code == 'eurostat_demo_pjan_f_nr',
+    filter( .data$shortcode == 'eurostat_demo_pjan_f_nr',
             !is.na(.data$value))
 
 
 missing_female_population <-indic_df %>%
-  filter( .data$indicator_code == 'eurostat_demo_pjan_f_nr',
+  filter( .data$shortcode == 'eurostat_demo_pjan_f_nr',
           is.na(.data$value))
 
 test_that("Correct metadata is returned", {
   expect_equal(test_population$metadata %>%
                  ungroup() %>%
-                 filter ( .data$indicator_code == 'eurostat_demo_pjan_f_nr') %>%
+                 filter ( .data$shortcode == 'eurostat_demo_pjan_f_nr') %>%
                  select ( all_of("missing")) %>% unlist() %>% as.numeric(),
                nrow(missing_female_population))
   expect_equal(test_population$metadata %>%
                  ungroup() %>%
-                 filter ( .data$indicator_code == 'eurostat_demo_pjan_f_nr') %>%
+                 filter ( .data$shortcode == 'eurostat_demo_pjan_f_nr') %>%
                  select ( all_of("actual")) %>% unlist() %>% as.numeric(),
                nrow(actual_female_population))
   expect_equal(test_population$metadata %>%
                  ungroup() %>%
-                 filter ( .data$indicator_code == 'eurostat_demo_pjan_f_nr') %>%
+                 filter ( .data$shortcode == 'eurostat_demo_pjan_f_nr') %>%
                  select ( all_of("actual")) %>% unlist() %>% as.numeric(),
                population_long %>% filter ( .data$sex == "F",
                                             !is.na(.data$values) ) %>%

@@ -54,7 +54,6 @@ impute_indicators <- function (indic) {
     select (all_of(
       c(
         "shortcode",
-        "indicator_code",
         "unit",
         "final"
       )

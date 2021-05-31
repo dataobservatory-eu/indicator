@@ -64,44 +64,42 @@ mitigation_pc_gdp_indicators <- get_eurostat_indicator(
 
 mitigation_pc_gdp_indicators$keywords
 
-indicators_to_impute <- gbard_expenditure_indicators$indicator %>%
+greendeal_to_impute <- gbard_expenditure_indicators$indicator %>%
   bind_rows ( gerd_expenditure_indicators$indicator ) %>%
   bind_rows ( mitigation_pc_gdp_indicators$indicator)
 
-metadata_to_update <- gbard_expenditure_indicators$metadata %>%
+gdo_metadata_to_update <- gbard_expenditure_indicators$metadata %>%
   bind_rows ( gerd_expenditure_indicators$metadata )  %>%
   bind_rows ( mitigation_pc_gdp_indicators$metadata)
 
-labelling_bind <- gbard_expenditure_indicators$labelling %>%
+gdo_labelling_bind <- gbard_expenditure_indicators$labelling %>%
   bind_rows ( gerd_expenditure_indicators$labelling )  %>%
   bind_rows ( mitigation_pc_gdp_indicators$labelling )
 
-imp <- impute_indicators ( indic = indicators_to_impute )
+gdo_imp <- impute_indicators ( indic = greendeal_to_impute  )
 
-updated_metadata <- update_metadata(imp, metadata = metadata_to_update )
+gdo_updated_metadata <- update_metadata(gdo_imp, metadata = gdo_metadata_to_update )
 
-
-names ( updated_metadata )
-set.seed(2021)
-updated_metadata %>%
+gdo_updated_metadata  %>%
   select ( all_of ( c("shortcode", "actual", "missing", "nocb",
                       "locf", "approximate", "forecast")))
 
-keywords <- add_keywords (description_table = gbard_expenditure_indicators$description,
+gdo_keywords <- add_keywords (description_table = gbard_expenditure_indicators$description,
                           keywords = list( "greendeal", "economy", "supply", "rd")) %>%
   bind_rows ( add_keywords (gerd_expenditure_indicators$description, list( "greendeal", "economy", "supply", "rd")) ) %>%
   bind_rows ( add_keywords (mitigation_pc_gdp_indicators$description, list( "greendeal", "economy", "supply", "general")) )
 
-save_path <- ifelse ( dir.exists("data-raw"),
+gdo_save_path <- ifelse ( dir.exists("data-raw"),
                               yes = file.path("data-raw", "greendeal.db"),
                               no = file.path("..", "data-raw", "greendeal.db"))
 
-create_database (indicator_tables = imp,
-                 metadata_tables = updated_metadata,
-                 labelling_table = labelling_bind,
-                 description_table = keywords,
-                 db_path = save_path)
+create_database (indicator_table = gdo_imp,
+                 metadata_table = gdo_updated_metadata,
+                 labelling_table = gdo_labelling_bind ,
+                 description_table = gdo_keywords,
+                 db_path = gdo_save_path)
 
+file.exists(gdo_save_path)
 
 
 

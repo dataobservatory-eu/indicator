@@ -5,13 +5,12 @@
 \alias{small_population_labelling}
 \title{Labelling of the Small Countries' Population Indicator}
 \format{
-A data frame with 6 rows and 5 variables:
+A data frame with 6 rows and 4 variables:
 \describe{
 \item{shortcode}{A curated short code, or the indicator_code, if not available}
-\item{indicator_code}{A machine-assigned unique identifier for the indicator}
+\item{var_name}{The name of the variable at source}
 \item{var_code}{The original coding of a variable at source}
 \item{var_label}{The original labelling of the variable at source}
-\item{var_name}{The name of the variable at source}
 }
 }
 \source{
@@ -29,6 +28,7 @@ Processed with \code{\link{get_eurostat_indicator}}.
 }
 \seealso{
 Other data files: 
+\code{\link{small_population_description}},
 \code{\link{small_population_indicator}},
 \code{\link{small_population_metadata}},
 \code{\link{small_population}}

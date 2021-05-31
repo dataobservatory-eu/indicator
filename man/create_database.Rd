@@ -5,17 +5,17 @@
 \title{Save Eurostat Indicators into a Database}
 \usage{
 create_database(
-  indicator_tables,
-  metadata_tables,
+  indicator_table,
+  metadata_table,
   labelling_table,
   description_table,
   db_path = tempdir()
 )
 }
 \arguments{
-\item{indicator_tables}{Indicators created by \code{\link{get_eurostat_indicator}} or \code{\link{impute_indicators}}.}
+\item{indicator_table}{Indicators created by \code{\link{get_eurostat_indicator}} or \code{\link{impute_indicators}}.}
 
-\item{metadata_tables}{Meatadata tables created by \code{\link{get_eurostat_indicator}} or \code{\link{update_metadata}}.}
+\item{metadata_table}{Meatadata tables created by \code{\link{get_eurostat_indicator}} or \code{\link{update_metadata}}.}
 
 \item{labelling_table}{Labelling table created by \code{\link{get_eurostat_indicator}}}
 
@@ -25,7 +25,7 @@ by \code{\link{add_keywords}}.}
 \item{db_path}{A path to save the database. Defaults to \code{tempdir()}}
 }
 \value{
-An Sqlite database with three tables: indicator, metadata and labelling.
+An SQLite database with four tables: indicator, metadata, labelling and description.
 }
 \description{
 Download and process Eurostat indicators, create their labelling table and descriptive
@@ -33,9 +33,24 @@ metadata about the indicators. Save the two metadata tables into metadata tables
 the tidy indicators themselves into an indicator table.
 }
 \examples{
-\dontrun{
-## See vignette
-)
+\donttest{
+data ( "small_population")
+population_long <- small_population \%>\%
+  pivot_wider( names_from = "geo", values_from = "values") \%>\%
+  pivot_longer ( cols = all_of(c("LI", "AD", "SM")),
+                 names_to = "geo", values_to = "values")
+
+small_population_data <- get_eurostat_indicator(
+  preselected_indicators = population_long,
+  id = "demo_pjan")
+
+
+create_database (indicator_table = small_population_data$indicator,
+                 metadata_table = small_population_data$metadata,
+                 labelling_table = small_population_data$labelling,
+                 description_table = small_population_data$description,
+                 db_path = file.path(tempdir(), "smallpopulation.db"))
+
 }
 }
 \concept{database functions}

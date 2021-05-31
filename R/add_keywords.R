@@ -21,7 +21,10 @@
 #' @export
 #'
 
-add_keywords <- function ( description_table, keywords, description = NULL) {
+add_keywords <- function ( description_table,
+                           keywords,
+                           description = NULL) {
+
   assertthat::assert_that( is.list(keywords),
                            msg = "keywords must be keywords in a list object.")
   assertthat::assert_that( length(keywords) >= 4,
@@ -35,12 +38,12 @@ add_keywords <- function ( description_table, keywords, description = NULL) {
   }
 
   if ( is.null(description) ) {
-    metadata$description <- metadata$description_at_source
+    description_table$description <- description_table$description_at_source
   } else {
     warning("Manual descriptions are not yet implemented.")
   }
 
-  metadata %>%
+  description_table %>%
     ungroup() %>%
     select ( all_of(c("shortcode", "description",
                       "description_at_source", "original_source"))

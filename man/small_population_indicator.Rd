@@ -5,19 +5,16 @@
 \alias{small_population_indicator}
 \title{Population of Small Countries}
 \format{
-A data frame with 99 rows and 9 variables:
+A data frame with 99 rows and 8 variables:
 \describe{
 \item{shortcode}{A curated short code, or the indicator_code, if not available.}
-\item{time}{Time of the observation}
 \item{geo}{Geographical dimension or location of the observation}
+\item{time}{Time of the observation}
+\item{unit}{Unit of the observation or measurement}
 \item{value}{Value of the observation}
 \item{estimate}{Actual, missing data, or the type of estimation used.}
 \item{method}{The method of estimation, if applicable.}
 \item{frequency}{A = annual, Q = quarterly, M = monthly, D = daily}
-\item{unit}{Unit of the observation or measurement}
-\item{description_at_source}{The original description of the observation}
-\item{indicator_code}{A machine-assigned unique identifier for the indicator}
-\item{code_at_source}{Identifier code used at original source}
 }
 }
 \source{
@@ -35,6 +32,7 @@ Processed with \code{\link{get_eurostat_indicator}}.
 }
 \seealso{
 Other data files: 
+\code{\link{small_population_description}},
 \code{\link{small_population_labelling}},
 \code{\link{small_population_metadata}},
 \code{\link{small_population}}

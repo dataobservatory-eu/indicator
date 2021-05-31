@@ -38,8 +38,9 @@ small_population_data <- get_eurostat_indicator(
 small_population_indicator <- small_population_data$indicator
 small_population_metadata <- small_population_data$metadata
 small_population_labelling  <- small_population_data$labelling
+small_population_description  <- small_population_data$description
 
 usethis::use_data(small_population_indicator, overwrite = TRUE)
-usethis::use_data(small_population_metadata, overwrite = TRUE)
+usethis::use_data(small_population_metadata,  overwrite = TRUE)
 usethis::use_data(small_population_labelling, overwrite = TRUE)
-
+usethis::use_data(small_population_description, overwrite = TRUE)

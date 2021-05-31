@@ -46,6 +46,7 @@ Processed with \code{\link{get_eurostat_indicator}}.
 }
 \seealso{
 Other data files: 
+\code{\link{small_population_description}},
 \code{\link{small_population_indicator}},
 \code{\link{small_population_labelling}},
 \code{\link{small_population}}

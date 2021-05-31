@@ -32,8 +32,6 @@ fill_missing_from_long_form <- function( indic_to_fill ) {
     tmp_fill
   }
 
-  fill_indicator(x = nest_to_fill$data[[1]])
-
   nest_to_fill <- indic_to_fill %>%
     select ( -any_of(c("year", "month", "day"))) %>%
     group_by ( .data$indicator_code,
@@ -47,7 +45,9 @@ fill_missing_from_long_form <- function( indic_to_fill ) {
   ##u <- nest_to_fill %>% tidyr::unnest(c("indicator_code", "description_at_source",
   ##                                      "code_at_source", "frequency", "unit"))
 
-  nest_to_fill %>% tidyr::unnest( "data") %>% ungroup()
+  nest_to_fill %>%
+    tidyr::unnest( "data") %>%
+    ungroup()
 
 }
 
