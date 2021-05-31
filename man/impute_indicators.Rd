@@ -10,7 +10,8 @@ impute_indicators(indic)
 \item{indic}{An imputed indicator from \code{\link{get_eurostat_indicator}}.}
 }
 \value{
-A data frame that with updated actual, missing, approximated, forecasted, nocb, locf estimates.
+A data frame that with updated actual, missing, approximated, forecasted,
+nocb, locf estimates.
 }
 \description{
 In the following order tries to fill missing values:

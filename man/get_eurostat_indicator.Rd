@@ -18,8 +18,8 @@ labeling from the Eurostat label dictionaries.}
 \item{eurostat_toc}{The Eurostat table of contents}
 }
 \value{
-A list that contains three tables: the indicator, a value label
-description table and a metadata table.
+A list that contains four tables: the indicator, a value label
+description table, the metadata table and the description and keywords table.
 }
 \description{
 Get a Eurostat data product and save its metadata and the data in

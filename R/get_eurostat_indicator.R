@@ -16,7 +16,7 @@
 #' @importFrom lubridate day month year
 #' @importFrom dplyr mutate filter case_when relocate bind_cols group_by_all
 #' @importFrom dplyr distinct_all select if_else rename left_join add_count mutate_all
-#' @importFrom dplyr anti_join ungroup
+#' @importFrom dplyr anti_join ungroup relocate
 #' @importFrom eurostat get_eurostat label_eurostat
 #' @importFrom purrr set_names
 #' @importFrom tidyselect any_of all_of everything contains
@@ -26,8 +26,8 @@
 #' @importFrom snakecase to_sentence_case
 #' @importFrom rlang .data
 #' @family acquisition functions
-#' @return A list that contains three tables: the indicator, a value label
-#' description table and a metadata table.
+#' @return A list that contains four tables: the indicator, a value label
+#' description table, the metadata table and the description and keywords table.
 #' @export
 
 get_eurostat_indicator <- function ( preselected_indicators = NULL,
@@ -333,10 +333,28 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
                  by = "indicator_code")
   } else { labelling_final  <- labelling }
 
+  keywords_table <- metadata_final %>%
+    mutate ( shorcode = .data$indicator_code,
+             description = .data$description_at_source,
+             )  %>%
+    ungroup() %>%
+    select ( all_of(c("shortcode", "description", "indicator_code",
+                      "description_at_source", "original_source"))
+    ) %>%
+    mutate ( keyword_1 = NA_character_,
+             keyword_2 = NA_character_,
+             keyword_3 = NA_character_,
+             keyword_4 = NA_character_,
+             further_keywords = NA_character_,
+             further_keywords = further_keywords ) %>%
+    relocate ( contains( "keyword"), .after = "description")
 
-  list ( indicator = indicator_final %>% select ( -all_of(c("code_at_source", "description_at_source"))),
+  list ( indicator = indicator_final %>%
+           select ( -all_of(c("code_at_source", "description_at_source", "indicator_code"))
+                    ),
          labelling = labelling_final,
          metadata = metadata_final %>%
-           select ( -any_of("type")))
+           select ( -any_of("type", "indicator_code")),
+         keywords = keywords_table)
 }
 

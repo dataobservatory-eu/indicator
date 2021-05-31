@@ -1,12 +1,18 @@
 Package: indicators
 Title: Tidy Statistical Indicators
-Version: 0.0.0.9005
-Authors@R: 
-    person(given = "Daniel",
-           family = "Antal",
-           role = c("aut", "cre"),
-           email = "daniel.antal@reprex.nl",
-           comment = c(ORCID = "0000-0001-7513-6760"))
+Version: 0.0.0.9006
+Authors@R:
+    c(person("Daniel", "Antal", role = c("aut", "cre"),
+             email = "daniel.antal@dataobservatory.eu", 
+             comment = c(ORCID = "0000-0001-7513-6760")),
+      person(given = "Kasia",
+             family = "Kulma",
+             role = "ctb", 
+             comment = c(ORCID = "0000-0002-2952-9720")),
+      person(given = "Pyry",
+             family = "Kantanen", 
+             role = "ctb"))
+Maintainer: Daniel Antal <daniel.antal@dataobservatory.eu>  
 Description: Creates tidy and documented statistical indicators from various statistical warehouses or from the Zenodo data repository.
 License: GPL (>= 3)
 Encoding: UTF-8
