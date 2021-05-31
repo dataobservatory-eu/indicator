@@ -122,12 +122,12 @@ indicators_to_impute <- cloud_indicators$indicator %>%
     bind_rows ( household_consumption_indicators$indicator)
 
 # We will updated the estimation columns after imputation.
-metadata_to_update <- cloud_indicators$metadata %>%
+dmo_metadata_to_update <- cloud_indicators$metadata %>%
     bind_rows ( artistic_activity_indicators$metadata )  %>%
     bind_rows ( household_consumption_indicators$metadta)
 
 # We need the labels, too, but we won't do anything with them.
-labelling_bind <- cloud_indicators$labelling %>%
+dmo_labelling_table <- cloud_indicators$labelling %>%
     bind_rows ( artistic_activity_indicators$labelling )  %>%
     bind_rows ( household_consumption_indicators$labelling )
 ```
@@ -135,7 +135,9 @@ labelling_bind <- cloud_indicators$labelling %>%
 And then carry out the imputation. In case you have many indicators, maybe it is safer to do them subgroup by subgroup. Later, when we will anyway re-process what is changed at the source, this may not be a problem.
 
 ```{r do-the-imputation, warning=FALSE, message=FALSE}
-imp <- impute_indicators ( indic = indicators_to_impute )
+dmo_imputed_indicator <- impute_indicators ( 
+  indic = indicators_to_impute
+  )
 ```
 
 The full description of the indicator table with an example is the [small_population_indicator](http://indicators.dataobservatory.eu/reference/small_population_indicator.html) dataset.
@@ -145,7 +147,9 @@ The full description of the indicator table with an example is the [small_popula
 This is not yet unit-tested, and does not seem to work properly. Basically we count the number of `approximated`, `next observation carry forward`, `forecasted`, and `last observation carry forward` estimates. 
 
 ```{r update-metadata}
-updated_metadata <- update_metadata(imp, metadata = metadata_to_update )
+dmo_updated_metadata <- update_metadata(
+  impute_dmo, 
+  metadata = dmo_metadata_to_update )
 ```
 
 The full description of the metadata table with an example is the [small_population_metadata](http://indicators.dataobservatory.eu/reference/small_population_metadata.html) dataset.
@@ -154,9 +158,11 @@ They should show up here, but it suspicious that some are gone missing:
 
 ```{r show-updated-metadata}
 set.seed(2021)
-updated_metadata %>%
+dmo_updated_metadata %>%
   sample_n (12) %>%
-  select ( all_of ( c("indicator_code", "actual", "missing", "nocb", "locf", "approximate", "forecast")))
+  select ( all_of ( c("shortcode", "actual",
+                      "missing", "nocb", "locf",
+                      "approximate", "forecast")))
 ```
 
 ## Map to Observatory
@@ -164,9 +170,10 @@ updated_metadata %>%
 At last, we create keywords.  The keywords help us placing the indicators and their metadata in the long-form documentation. At least four keywords must be used. The first keyword, "music", identifies the music observatory, the "economy" the *Music economy pillar*, "Demand" is the first top-level division in the pillar, and "PCR"is the second.  Any further keywords, if they exist, are added as a concatenated list to the keyword table, divided by `__`.
 
 ```{r create-keyword-table}
-keywords <- add_keywords (
+dmo_keywords <- add_keywords (
   artistic_activity_indicators$description,
-  list( "music", "economy", "supply", "potential_supply")) %>%
+  list( "music", "economy", "supply", "potential_supply")
+  ) %>%
   bind_rows ( 
     add_keywords (
       cloud_indicators$description, 
@@ -180,7 +187,7 @@ keywords <- add_keywords (
                     "further_keywords")))
 
 set.seed(2021) #fixed pseudo-random selection
-keywords %>%
+dmo_keywords %>%
   sample_n(12)
 ```
 
@@ -196,10 +203,10 @@ dmo_path <- ifelse (
   no = file.path("..", "data-raw", "dmo.db"))
 
 create_database ( 
-  indicator_table = imp,
-  metadata_table= updated_metadata,
-  labelling_table = labelling_bind,
-  description_table = keywords,
+  indicator_table = imputed_dmo,
+  metadata_table= dmo_updated_metadata,
+  labelling_table = dmo_labelling_table,
+  description_table = dmo_keywords,
   db_path = dmo_path
   )
 ```
