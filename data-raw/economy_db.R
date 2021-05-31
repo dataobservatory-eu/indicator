@@ -110,18 +110,18 @@ patents_nuts3_indicators <- get_eurostat_indicator(
   preselected_indicators = patents_nuts3_raw,
   id = "pat_ep_ripc")
 
-# eutm_nuts3_indicators <- get_eurostat_indicator(
+#eutm_nuts3_indicators <- get_eurostat_indicator(
 #  preselected_indicators = eutm_nuts3_raw,
 #  id = "ipr_ta_popr")
 
-# cda_nuts3_indicators <- get_eurostat_indicator(
+#cda_nuts3_indicators <- get_eurostat_indicator(
 #  preselected_indicators = cda_nuts3_raw,
 #  id = "ipr_da_popr")
 
 
-gdp_nuts3_indicators <- get_eurostat_indicator(
-  preselected_indicators = gdp_nuts3_raw,
-  id = "nama_10r_3gdp")
+#gdp_nuts3_indicators <- get_eurostat_indicator(
+ # preselected_indicators = gdp_nuts3_raw,
+  #id = "nama_10r_3gdp")
 
 
 indicators_to_impute <- high_tech_patents_indicators$indicator %>%
@@ -133,17 +133,22 @@ metadata_to_update <- high_tech_patents_indicators$metadata %>%
 labelling_bind <- high_tech_patents_indicators$labelling %>%
   bind_rows ( patents_nuts3_indicators$labelling )
 
-imp <- impute_indicators ( indic = indicators_to_impute )
+imp <- impute_indicators ( indic = indicators_to_impute %>%
+                             filter ( time > as.Date("1990-01-01")))
 
-updated_metadata <- update_metadata(imp, metadata = metadata_to_update )
+updated_metadata <- update_metadata(
+  imp,
+  metadata = metadata_to_update )
 
 set.seed(2021)
 updated_metadata %>%
-  select ( all_of ( c("indicator_code", "actual", "missing", "nocb", "locf", "approximate", "forecast")))
+  select ( all_of ( c("indicator_code", "actual", "missing",
+                      "nocb", "locf", "approximate", "forecast")))
 
-keywords <- add_keywords (high_tech_patents_indicators$metadata, list( "economy", "ipr", "supply", "rd")) %>%
-  bind_rows ( add_keywords (patents_nuts3_indicators$metadata, list( "economy", "ipr", "supply", "rd")) ) %>%
-  select ( all_of(c("indicator_code", "keyword_1", "keyword_2", "keyword_3", "keyword_4", "further_keywords")))
+keywords <- add_keywords (metadata = high_tech_patents_indicators$metadata,
+                          keywords = list( "economy", "ipr", "supply", "rd")) %>%
+  bind_rows ( add_keywords (patents_nuts3_indicators$metadata,
+                            list( "economy", "ipr", "supply", "rd")) )
 
 not_included_path <- ifelse ( dir.exists("data-raw"),
                               yes = file.path("data-raw", "economy.db"),

@@ -13,7 +13,8 @@
 #' @importFrom tidyr nest unnest
 #' @importFrom purrr possibly
 #' @family approximation functions
-#' @return A data frame that with updated actual, missing, approximated, forecasted, nocb, locf estimates.
+#' @return A data frame that with updated actual, missing, approximated, forecasted,
+#' nocb, locf estimates.
 #' @export
 
 impute_indicators <- function (indic) {
@@ -21,12 +22,11 @@ impute_indicators <- function (indic) {
   possibly_nocb <- purrr::possibly(na_nocb, NULL)
   possibly_forecast <- purrr::possibly(indicator_forecast, NULL)
   possibly_locf <- purrr::possibly(na_locf, NULL)
-  
+
   tmp_nested <- indic %>%
     group_by (
       .data$indicator_code,
-      .data$description_indicator,
-      .data$db_source_code,
+      .data$shortcode,
       .data$unit
     ) %>%
     tidyr::nest () %>%
@@ -34,7 +34,7 @@ impute_indicators <- function (indic) {
     mutate (nocb   = map(.data$approx, possibly_nocb)) %>%
     mutate (forecasted   = map(.data$approx, possibly_forecast)) %>%
     mutate (locf   = map(.data$approx, possibly_locf))
-  
+
   success_matrix <- data.frame(
     locf = apply (tmp_nested, 1, function(x)
       ! is.null(x$locf)),
@@ -45,23 +45,22 @@ impute_indicators <- function (indic) {
     approx = apply (tmp_nested, 1, function(x)
       ! is.null(x$approx))
   )
-  
+
   tmp_nested$final = case_when (
     !is.null(tmp_nested$locf) ~ tmp_nested$locf,!is.null(tmp_nested$forecasted) ~ tmp_nested$forecasted,!is.null(tmp_nested$nocb) ~ tmp_nested$nocb,!is.null(tmp_nested$approx) ~ tmp_nested$approx,
     TRUE ~ tmp_nested$data
   )
-  
+
   tmp_nested %>%
     select (all_of(
       c(
+        "shortcode",
         "indicator_code",
-        "description_indicator",
-        "db_source_code",
         "unit",
         "final"
       )
     )) %>%
     unnest (.data$final) %>%
     ungroup()
-  
+
 }
