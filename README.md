@@ -8,6 +8,8 @@
 [![R-CMD-check](https://github.com/dataobservatory-eu/indicator/workflows/R-CMD-check/badge.svg)](https://github.com/dataobservatory-eu/indicator/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/dataobservatory-eu/indicator/branch/master/graph/badge.svg)](https://codecov.io/gh/dataobservatory-eu/indicator?branch=master)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 The goal of indicators is to harvest data from various open data sources
