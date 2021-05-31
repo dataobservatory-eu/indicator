@@ -21,7 +21,7 @@
 #' @export
 #'
 
-add_keywords <- function ( metadata, keywords, description = NULL) {
+add_keywords <- function ( description_table, keywords, description = NULL) {
   assertthat::assert_that( is.list(keywords),
                            msg = "keywords must be keywords in a list object.")
   assertthat::assert_that( length(keywords) >= 4,
@@ -42,7 +42,7 @@ add_keywords <- function ( metadata, keywords, description = NULL) {
 
   metadata %>%
     ungroup() %>%
-    select ( all_of(c("shortcode", "description", "indicator_code",
+    select ( all_of(c("shortcode", "description",
                       "description_at_source", "original_source"))
              ) %>%
     mutate ( keyword_1 = keywords[[1]],

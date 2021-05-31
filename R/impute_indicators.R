@@ -25,7 +25,6 @@ impute_indicators <- function (indic) {
 
   tmp_nested <- indic %>%
     group_by (
-      .data$indicator_code,
       .data$shortcode,
       .data$unit
     ) %>%

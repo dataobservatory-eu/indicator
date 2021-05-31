@@ -51,6 +51,9 @@ gbard_expenditure_indicators <- get_eurostat_indicator(
   preselected_indicators = gbard_expenditure_raw,
   id = "gba_nabsfin07")
 
+gbard_expenditure_indicators$description$description_at_source
+
+
 gerd_expenditure_indicators <- get_eurostat_indicator(
   preselected_indicators = gerd_expenditure_raw,
   id = "rd_e_gerdsobj07")
@@ -58,6 +61,8 @@ gerd_expenditure_indicators <- get_eurostat_indicator(
 mitigation_pc_gdp_indicators <- get_eurostat_indicator(
   preselected_indicators = mitigation_pc_gdp_raw,
   id = "env_ac_egss2")
+
+mitigation_pc_gdp_indicators$keywords
 
 indicators_to_impute <- gbard_expenditure_indicators$indicator %>%
   bind_rows ( gerd_expenditure_indicators$indicator ) %>%
@@ -75,24 +80,27 @@ imp <- impute_indicators ( indic = indicators_to_impute )
 
 updated_metadata <- update_metadata(imp, metadata = metadata_to_update )
 
+
+names ( updated_metadata )
 set.seed(2021)
 updated_metadata %>%
-  select ( all_of ( c("indicator_code", "actual", "missing", "nocb", "locf", "approximate", "forecast")))
+  select ( all_of ( c("shortcode", "actual", "missing", "nocb",
+                      "locf", "approximate", "forecast")))
 
-keywords <- add_keywords (gbard_expenditure_indicators$metadata, list( "greendeal", "economy", "supply", "rd")) %>%
-  bind_rows ( add_keywords (gerd_expenditure_indicators$metadata, list( "greendeal", "economy", "supply", "rd")) ) %>%
-  bind_rows ( add_keywords (mitigation_pc_gdp_indicators$metadata, list( "greendeal", "economy", "supply", "general")) ) %>%
-  select ( all_of(c("indicator_code", "keyword_1", "keyword_2", "keyword_3", "keyword_4", "further_keywords")))
+keywords <- add_keywords (description_table = gbard_expenditure_indicators$description,
+                          keywords = list( "greendeal", "economy", "supply", "rd")) %>%
+  bind_rows ( add_keywords (gerd_expenditure_indicators$description, list( "greendeal", "economy", "supply", "rd")) ) %>%
+  bind_rows ( add_keywords (mitigation_pc_gdp_indicators$description, list( "greendeal", "economy", "supply", "general")) )
 
-not_included_path <- ifelse ( dir.exists("data-raw"),
+save_path <- ifelse ( dir.exists("data-raw"),
                               yes = file.path("data-raw", "greendeal.db"),
                               no = file.path("..", "data-raw", "greendeal.db"))
 
 create_database (indicator_tables = imp,
                  metadata_tables = updated_metadata,
                  labelling_table = labelling_bind,
-                 keywords_table = keywords,
-                 db_path = not_included_path)
+                 description_table = keywords,
+                 db_path = save_path)
 
 
 

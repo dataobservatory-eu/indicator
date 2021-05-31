@@ -13,7 +13,8 @@
 #' @importFrom tidyselect all_of
 #' @importFrom tidyr unite pivot_wider
 #' @family acquisition functions
-#' @return A data frame that with updated actual, missing, approximated, forecasted, nocb, locf estimates.
+#' @return A data frame that with updated actual, missing, approximated, forecasted,
+#' nocb, locf estimates.
 #' @export
 
 update_metadata <- function ( indic, metadata ) {
@@ -21,7 +22,7 @@ update_metadata <- function ( indic, metadata ) {
   na_to_zero <- function(x) ifelse(is.na(x), 0, x)
 
   count_estimate_categories <- indic %>%
-    select ( all_of(c("indicator_code", "estimate")) ) %>%
+    select ( all_of(c("shortcode", "estimate")) ) %>%
     group_by ( .data$estimate ) %>%
     add_count( ) %>%
     ungroup() %>%
@@ -31,7 +32,7 @@ update_metadata <- function ( indic, metadata ) {
 
   right_join (count_estimate_categories,
               metadata,
-              by = c("indicator_code", "actual", "missing", "locf")) %>%
+              by = c("shortcode", "actual", "missing", "locf")) %>%
     select ( all_of(names(metadata)) )
 
 }

@@ -84,7 +84,6 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
              code_at_source = .data$indicator_code,
              description_at_source = eurostat_toc$title[eurostat_toc$code == id][1] ) # is this make sense? Why do we have multiples?
 
-
   ## The value labels do not have a strict ordering, except for the case when
   ## Eurostat has complex tables with several indicators in one data file ----
 
@@ -219,8 +218,14 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
     #        all_of (c("indicator_code", "unit")),
     #        sep = "_",
     #        remove = FALSE) %>%
-    mutate ( indicator_code = snakecase::to_snake_case(.data$indicator_code))
+    mutate ( description_at_source = snakecase::to_sentence_case(.data$description_at_source))
 
+
+  ## unit and description are lost here.
+
+  unique ( labelling_tbl$indicator_code )
+
+  unique( indicator_ext$indicator_code)
 
   indicator_ext_unit <- indicator_ext %>%
     select ( -all_of (c("description_at_source", "unit"))) %>%
@@ -239,7 +244,8 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
     mutate ( indicator_code = tolower(.data$indicator_code)) %>%
     mutate ( shortcode  = indicator_code ) %>%
     relocate ( shortcode, .before = everything()) %>%
-    relocate ( all_of(c("indicator_code", "code_at_source")), .after = everything())
+    relocate ( all_of(c("indicator_code", "code_at_source")),
+               .after = everything())
 
   ## Further metadata and assertions  -------------------------------------------
   indicator_frequency <- unique( indicator_final$frequency)
@@ -333,7 +339,7 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
                  by = "indicator_code")
   } else { labelling_final  <- labelling }
 
-  keywords_table <- metadata_final %>%
+  description_table <- metadata_final %>%
     mutate ( shorcode = .data$indicator_code,
              description = .data$description_at_source,
              )  %>%
@@ -349,12 +355,14 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
              further_keywords = further_keywords ) %>%
     relocate ( contains( "keyword"), .after = "description")
 
-  list ( indicator = indicator_final %>%
-           select ( -all_of(c("code_at_source", "description_at_source", "indicator_code"))
-                    ),
+  indicator_final <- indicator_final %>%
+    select ( -all_of(c("code_at_source", "description_at_source", "indicator_code"))
+    )
+
+  list ( indicator = indicator_final,
          labelling = labelling_final,
          metadata = metadata_final %>%
-           select ( -any_of("type", "indicator_code")),
-         keywords = keywords_table)
+           select ( -any_of(c("type", "indicator_code"))),
+         description = description_table)
 }
 

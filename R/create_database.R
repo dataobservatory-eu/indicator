@@ -6,7 +6,8 @@
 #' @param indicator_tables Indicators created by \code{\link{get_eurostat_indicator}} or \code{\link{impute_indicators}}.
 #' @param metadata_tables Meatadata tables created by \code{\link{get_eurostat_indicator}} or \code{\link{update_metadata}}.
 #' @param labelling_table Labelling table created by \code{\link{get_eurostat_indicator}}
-#' @param keywords_table Keywords created for the indicators by \code{\link{add_keywords}}.
+#' @param description_table Description and keywords created for the indicators
+#' by \code{\link{add_keywords}}.
 #' @param db_path A path to save the database. Defaults to \code{tempdir()}
 #' @importFrom DBI dbWriteTable dbAppendTable dbDisconnect dbConnect
 #' @importFrom RSQLite SQLite sqliteCopyDatabase
@@ -22,7 +23,7 @@
 create_database <- function ( indicator_tables,
                               metadata_tables,
                               labelling_table,
-                              keywords_table,
+                              description_table,
                               db_path = tempdir() ) {
 
   con <- initialize_database()
@@ -43,8 +44,8 @@ create_database <- function ( indicator_tables,
                     overwrite = TRUE,
                     row.names  = FALSE)
 
-  DBI::dbWriteTable(con, "keywords",
-                    keywords_table,
+  DBI::dbWriteTable(con, "description",
+                    description_table,
                     overwrite = TRUE,
                     row.names  = FALSE)
 
