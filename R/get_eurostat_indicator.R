@@ -242,8 +242,8 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
 
   indicator_final <- dplyr::ungroup(indicator_final) %>%
     mutate ( indicator_code = tolower(.data$indicator_code)) %>%
-    mutate ( shortcode  = indicator_code ) %>%
-    relocate ( shortcode, .before = everything()) %>%
+    mutate ( shortcode  = .data$indicator_code ) %>%
+    relocate ( .data$shortcode, .before = everything()) %>%
     relocate ( all_of(c("indicator_code", "code_at_source")),
                .after = everything())
 
@@ -352,7 +352,7 @@ get_eurostat_indicator <- function ( preselected_indicators = NULL,
              keyword_3 = NA_character_,
              keyword_4 = NA_character_,
              further_keywords = NA_character_,
-             further_keywords = further_keywords ) %>%
+             further_keywords = .data$further_keywords ) %>%
     relocate ( contains( "keyword"), .after = "description")
 
   indicator_final <- indicator_final %>%

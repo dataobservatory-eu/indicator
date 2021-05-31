@@ -39,7 +39,8 @@ Imports:
     forecast,
     timetk,
     sweep,
-    stringr
+    stringr,
+    pillar
 Suggests: 
     rmarkdown,
     knitr,

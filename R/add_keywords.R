@@ -10,7 +10,8 @@
 #'
 #' Further keywords are added to \code{further_keywords} as a concantenated list.
 #'
-#' @param metadata A metadata table from \code{\link{get_eurostat_indicator}}.
+#' @param description_table A descriptive metadata table
+#' from \code{\link{get_eurostat_indicator}}.
 #' @param keywords A list of at least four keywords to place to indicator in the observatory.
 #' @param description Currently only default \code{NULL}, it will be a vector of human-written descriptions.
 #' @importFrom dplyr mutate select ungroup relocate

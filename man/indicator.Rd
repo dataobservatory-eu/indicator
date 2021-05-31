@@ -59,6 +59,8 @@ manual revision.}
 
 \item{code_at_source}{The identifier in the original source, if applicable.}
 
+\item{doi}{A document object identifier, if exists.}
+
 \item{keyword1}{The first keywords must be on of the observatories: \code{economy},
 \code{greendeal}, \code{music} and planned ones: \code{competition}, \code{creative}.}
 

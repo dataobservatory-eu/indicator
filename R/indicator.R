@@ -27,6 +27,7 @@
 #' @param keyword3 The third must be a topic within a pillar.
 #' @param keyword4 A search term within the topic.
 #' @param keywords A character vector of any optional, further keywords.
+#' @param doi A document object identifier, if exists.
 #' @rdname indicator
 #' @return A data.frame or tibble with indicator attributes.
 #' @importFrom dplyr distinct_all

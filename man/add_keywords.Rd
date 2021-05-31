@@ -7,11 +7,12 @@
 add_keywords(description_table, keywords, description = NULL)
 }
 \arguments{
+\item{description_table}{A descriptive metadata table
+from \code{\link{get_eurostat_indicator}}.}
+
 \item{keywords}{A list of at least four keywords to place to indicator in the observatory.}
 
 \item{description}{Currently only default \code{NULL}, it will be a vector of human-written descriptions.}
-
-\item{metadata}{A metadata table from \code{\link{get_eurostat_indicator}}.}
 }
 \value{
 A data frame of indicator codes, descriptions, original source codes,
